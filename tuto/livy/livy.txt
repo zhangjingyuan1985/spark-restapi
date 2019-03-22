@@ -1,0 +1,29 @@
+H=vm-75222.lal.in2p3.fr:21111
+HE="-H 'Content-Type: application/json'"
+P="-X POST"
+D="-X DELETE"
+
+# find all sessions in the livy server
+
+curl $H/sessions | python -m json.tool | egrep '"id"'
+
+# delete a session
+
+> curl $H/sessions/<ses> $D
+
+# create a session
+
+> curl $P --data '{"kind": "pyspark"}' -H 'Content-Type: application/json' $H/sessions
+
+# execute a statement
+
+curl $H/sessions/<ses>/statements $P -H 'Content-Type: application/json' -d '{"code":"2 + 2"}'
+
+# status of execution of a statement
+
+curl $H/sessions/<ses>/statements/<sta>
+
+# Spark statement
+
+> curl $H/sessions/0/statements $P -H 'Content-Type: application/json' -d '{"code":"sc.parallelize([1, 2, 3, 4, 5]).count()"}'
+
