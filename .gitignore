@@ -1,2 +1,6 @@
-*.class
+.DS_Store
 *.log
+.coverage
+__pycache__
+cov.txt
+htmlcov
