@@ -1,0 +1,51 @@
+#!/usr/bin/python
+
+# coding: utf-8
+
+# Copyright 2018 AstroLab Software
+# Author: Chris Arnault
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
+
+H=vm-75222.lal.in2p3.fr:21111
+HE="-H 'Content-Type: application/json'"
+P="-X POST"
+D="-X DELETE"
+
+# find all sessions in the livy server
+
+curl $H/sessions | python -m json.tool | egrep '"id"'
+
+# create a session
+
+curl $P --data '{"kind": "pyspark"}' -H 'Content-Type: application/json' $H/sessions
+
+# execute a statement
+
+curl $H/sessions/$S/statements $P -H 'Content-Type: application/json' -d '{"code":"2 + 2"}'
+
+# status of execution of a statement
+
+curl $H/sessions/$S/statements/$T
+
+# Spark statement
+
+> curl $H/sessions/$S/statements $P -H 'Content-Type: application/json' -d '{"code":"sc.parallelize([1, 2, 3, 4, 5]).count()"}'
+
+# delete a session
+
+curl $H/sessions/$S $D
+
