@@ -56,7 +56,9 @@ html = """
 
     <form action="/index.py" method="post">
         <input type="text" name="name" value="Votre nom" />
+        <br>
         <input type="text" name="statement" value="Spark statement" />
+        <br>
         <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
       </div>
