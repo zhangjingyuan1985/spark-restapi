@@ -55,11 +55,11 @@ html = """
     <div class="topnav">
 
     <form action="/index.py" method="post">
-        <input type="text" name="name" value="Votre nom" />
+        Give your name:<input type="text" name="name" value="Votre nom" />
         <br>
-        <input type="text" name="statement" value="Spark statement" />
+        Enter a Spark statement <input type="text" name="statement" value="Spark statement" />
         <br>
-        <input type="submit" name="send" value="Envoyer information au serveur">
+        Send: <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
       </div>
     <p>&copy; AstroLab Software 2018-2019</p>
