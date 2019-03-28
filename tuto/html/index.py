@@ -102,7 +102,7 @@ html = """
     <form action="/index.py" method="post">
         Give your name:<input type="text" name="name" value="Votre nom" />
         <br>
-        Enter a Spark statement <input type="text" name="statement" value=code />
+        Enter a Spark statement <input type="text" name="statement" value="code" />
         <br>
         Send: <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
