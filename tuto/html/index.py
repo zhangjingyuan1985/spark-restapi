@@ -55,6 +55,9 @@ print("Content-type: text/html; charset=utf-8\n")
 name = ""
 print(form.getvalue("name"))
 
+print(",".join(form.keys()))
+
+"""
 print("Create a session ")
 session = client.create_session(SessionKind.PYSPARK)
 print("=> session ", session.session_id)
@@ -80,7 +83,7 @@ if code != "":
             break
 
     print("result = ", result)
-
+"""
 
 
 html = """
