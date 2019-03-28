@@ -52,12 +52,15 @@ LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
 form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
+name = ""
 print(form.getvalue("name"))
 
+statement = ""
 statement = form.getvalue("statement")
-print("direct execution of a statement ")
-with LivySession(LIVY_URL) as session:
-    session.run(statemnt)
+if statement != "":
+    print("direct execution of a statement ", statement)
+    with LivySession(LIVY_URL) as session:
+        session.run(statement)
 
 html = """
 <!DOCTYPE html>
@@ -75,7 +78,7 @@ html = """
     <form action="/index.py" method="post">
         Give your name:<input type="text" name="name" value="Votre nom" />
         <br>
-        Enter a Spark statement <input type="text" name="statement" value="Spark statement" />
+        Enter a Spark statement <input type="text" name="statement" value=statement />
         <br>
         Send: <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
