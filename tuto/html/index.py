@@ -36,26 +36,46 @@ http://<host>:24701/index.py
 import cgi 
 
 form = cgi.FieldStorage()
-print("Content-type: text/html; charset=utf-8\n")
+print("Content-type: text/web; charset=utf-8\n")
 
 print(form.getvalue("name"))
 print(form.getvalue("age"))
 
-html = """<!DOCTYPE html>
+html = """
+<!DOCTYPE html>
+<html>
 <head>
-    <title>Mon programme</title>
+
+<!-- Define the styles -->
+<link rel="stylesheet" type="text/css" href="css/finkstyle.css">
+
 </head>
+
+<!-- Main start -->
 <body>
+  <!-- Navigation bar -->
+<div class="hero-image">
+  <div class="hero-text">
+    <h1 style="font-size:50px">Fink</h1>
+    <h3>Alert dataset monitor</h3>
+    <div class="topnav">
+      <a class="active" href="/index.html">Fink &#8594;</a>
+      <a href="/live.html">Live</a>
+      <a href="/about.html">About</a>
+      </div>
+    <p>&copy; AstroLab Software 2018-2019</p>
     <form action="/index.py" method="post">
         <input type="text" name="name" value="Votre nom" />
        <input type="text" name="age" value="Votre age" />
 
         <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
+  </div>
+</div>
+
 </body>
 </html>
+
 """
 
 print(html)
-
-
