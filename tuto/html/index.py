@@ -35,8 +35,8 @@ https://python-django.dev/page-python-serveur-web-creer-rapidement
 # coding: utf-8
 
 import cgi
-from pylivy.session import *
-from pylivy.client import *
+#from pylivy.session import *
+#from pylivy.client import *
 
 
 """
@@ -56,6 +56,8 @@ name = ""
 print(form.getvalue("name"))
 
 print(",".join(form.keys()))
+
+print(form.getvalue("session"))
 
 """
 print("Create a session ")
@@ -85,6 +87,7 @@ if code != "":
     print("result = ", result)
 """
 
+session = 123
 
 html = """
 <!DOCTYPE html>
@@ -104,6 +107,8 @@ html = """
         <br>
         Enter a Spark statement <input type="text" name="statement" value="code" />
         <br>
+        <input type="hidden" name="session" value={}
+        <br>
         Send: <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
       </div>
@@ -113,6 +118,7 @@ html = """
 
 </body>
 </html>
-"""
+""".format(session)
+
 
 print(html)
