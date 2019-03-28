@@ -43,13 +43,26 @@ print(form.getvalue("name"))
 
 html = """<!DOCTYPE html>
 <head>
+    <link rel="stylesheet" type="text/css" href="css/finkstyle.css">
+
     <title>Mon programme test</title>
 </head>
 <body>
+<div class="hero-image">
+  <div class="hero-text">
+    <h1 style="font-size:50px">Fink</h1>
+    <h3>Alert dataset monitor</h3>
+    <div class="topnav">
+
     <form action="/index.py" method="post">
         <input type="text" name="name" value="Votre nom" />
         <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
+      </div>
+    <p>&copy; AstroLab Software 2018-2019</p>
+  </div>
+</div>
+
 </body>
 </html>
 """
