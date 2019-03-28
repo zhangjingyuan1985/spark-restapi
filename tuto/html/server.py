@@ -33,13 +33,11 @@ https://python-django.dev/page-python-serveur-web-creer-rapidement
 
 import http.server
  
-PORT = 24702
-server_address = ("vm-75222.lal.in2p3.fr", PORT)
+PORT = 24701
+server_address = ("", PORT)
 
 server = http.server.HTTPServer
 handler = http.server.CGIHTTPRequestHandler
-
-### handler.cgi_directories = ["/home/christian.arnault/fink_data_monitor/tuto/html/"]
 
 handler.cgi_directories = ["/"]
 
