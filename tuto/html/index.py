@@ -41,10 +41,10 @@ print("Content-type: text/html; charset=utf-8\n")
 
 print(form.getvalue("name"))
 
-html = """<!DOCTYPE html>
+html = """
+<!DOCTYPE html>
 <head>
     <link rel="stylesheet" type="text/css" href="css/finkstyle.css">
-
     <title>Mon programme test</title>
 </head>
 <body>
@@ -56,6 +56,7 @@ html = """<!DOCTYPE html>
 
     <form action="/index.py" method="post">
         <input type="text" name="name" value="Votre nom" />
+        <input type="text" name="statement" value="Spark statement" />
         <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
       </div>
