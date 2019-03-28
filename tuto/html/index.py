@@ -35,11 +35,29 @@ https://python-django.dev/page-python-serveur-web-creer-rapidement
 # coding: utf-8
 
 import cgi
+from pylivy.session import *
+from pylivy.client import *
+
+
+"""
+Demo of using the pylivy library
+
+https://pylivy.readthedocs.io/en/latest/index.web
+
+"""
+
+LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
+
 
 form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
 print(form.getvalue("name"))
+
+statement = form.getvalue("statement")
+print("direct execution of a statement ")
+with LivySession(LIVY_URL) as session:
+    session.run(statemnt)
 
 html = """
 <!DOCTYPE html>
