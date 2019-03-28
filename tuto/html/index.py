@@ -55,12 +55,33 @@ print("Content-type: text/html; charset=utf-8\n")
 name = ""
 print(form.getvalue("name"))
 
-statement = ""
-statement = form.getvalue("statement")
-if statement != "":
-    print("direct execution of a statement ", statement)
-    with LivySession(LIVY_URL) as session:
-        session.run(statement)
+print("Create a session ")
+session = client.create_session(SessionKind.PYSPARK)
+print("=> session ", session.session_id)
+
+print("... wait until idle ...")
+while True:
+    session = client.get_session(s.session_id)
+    if session.state == SessionState.IDLE:
+        break
+
+code = form.getvalue("statement")
+if code != "":
+    print("direct execution of a statement ", code)
+
+    st = client.create_statement(s.session_id, code)
+
+    print("... wait until available ...")
+    result = ""
+    while True:
+        st = client.get_statement(session.session_id, st.statement_id)
+        if st.state == StatementState.AVAILABLE:
+            result = st.output.text
+            break
+
+    print("result = ", result)
+
+
 
 html = """
 <!DOCTYPE html>
@@ -78,7 +99,7 @@ html = """
     <form action="/index.py" method="post">
         Give your name:<input type="text" name="name" value="Votre nom" />
         <br>
-        Enter a Spark statement <input type="text" name="statement" value=statement />
+        Enter a Spark statement <input type="text" name="statement" value=code />
         <br>
         Send: <input type="submit" name="send" value="Envoyer information au serveur">
     </form> 
