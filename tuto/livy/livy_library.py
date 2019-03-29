@@ -26,7 +26,7 @@ from pylivy.client import *
 """
 Demo of using the pylivy library
 
-https://pylivy.readthedocs.io/en/latest/index.html
+https://pylivy.readthedocs.io/en/latest/index.web
 
 """
 

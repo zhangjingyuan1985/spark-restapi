@@ -27,7 +27,8 @@ Then, call in a web navigator the URL
 http://<host>:24701/index.py
 
 The index.py script has to be present on the <host> machine 
- 
+
+https://python-django.dev/page-python-serveur-web-creer-rapidement
 """
 
 import http.server
@@ -37,7 +38,9 @@ server_address = ("", PORT)
 
 server = http.server.HTTPServer
 handler = http.server.CGIHTTPRequestHandler
+
 handler.cgi_directories = ["/"]
+
 print("Serveur actif sur le port :", PORT)
 
 httpd = server(server_address, handler)
