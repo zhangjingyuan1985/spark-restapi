@@ -35,8 +35,8 @@ https://python-django.dev/page-python-serveur-web-creer-rapidement
 # coding: utf-8
 
 import cgi
-#from pylivy.session import *
-#from pylivy.client import *
+from pylivy.session import *
+from pylivy.client import *
 
 
 """
@@ -260,10 +260,8 @@ else:
         html += """<br>No session<br>"""
         waiting_session.set(0)
 
-        """
         if not simul.is_set():
             pass
-        """
 
         print(waiting_session.debug())
 
