@@ -159,13 +159,21 @@ html = """
     <div class="topnav"> """
 
 # manage Livy simulation
+
+if change_simul.is_set():
+    will_change_simul = True
+    """
+    if simul.is_set():
+        simul.reset()
+    else:
+        simul.set(1)
+    """
+
 if simul.is_set():
     html += """
     <form action="/index.py" method="post">
         <br> Currently simulate Livy"""
-    if change_simul.is_set():
-        simul.set(1)
-        change_simul.reset()
+    change_simul.set(1)
     html += variables.to_form()
     html += """<button type="submit">Use real Livy</button>
         </form>
@@ -174,13 +182,14 @@ else:
     html += """
         <form action="/index.py" method="post" name="simul">
             <br> Currently using real Livy"""
-    if change_simul.is_set():
-        simul.reset()
-        change_simul.reset()
+    change_simul.set(1)
     html += variables.to_form()
     html += """<button type="submit">Simul Livy</button>
         </form>
     """
+
+change_simul.reset()
+
 
 # Manage Livy session & Spark statements
 html += """
@@ -226,7 +235,7 @@ if session.is_set():
         html += """<button type="submit">waiting statement</button>"""
 else:
     # session management
-    elif not waiting_session.is_set():
+    if not waiting_session.is_set():
         html += """<br>No session<br>"""
         waiting_session.set(0)
 
