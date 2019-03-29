@@ -132,16 +132,22 @@ form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
 # init data
-variables = VariableSet(["simul", "change_simul", "session", "waiting_session", "waiting_statement", "statement"])
-variables.read()
+variables = VariableSet(["start", "simul", "change_simul", "session", "waiting_session", "waiting_statement", "statement"])
 
+start = variables.variable("start")
 simul = variables.variable("simul")
-simul.set(1)
 change_simul = variables.variable("change_simul")
 session = variables.variable("session")
 waiting_session = variables.variable("waiting_session")
 waiting_statement = variables.variable("waiting_statement")
 statement = variables.variable("statement")
+
+variables.read()
+
+if start.is_set():
+    simul.set(1)
+    start.reset()
+
 
 # ======================================================
 
@@ -160,36 +166,51 @@ html = """
 
 # manage Livy simulation
 
-if change_simul.is_set():
-    will_change_simul = True
-    """
-    if simul.is_set():
-        simul.reset()
-    else:
-        simul.set(1)
-    """
-
-if simul.is_set():
-    html += """
-    <form action="/index.py" method="post">
-        <br> Currently simulate Livy"""
-    change_simul.set(1)
-    html += variables.to_form()
-    html += """<button type="submit">Use real Livy</button>
-        </form>
-    """
-else:
-    html += """
-        <form action="/index.py" method="post" name="simul">
-            <br> Currently using real Livy"""
-    change_simul.set(1)
-    html += variables.to_form()
-    html += """<button type="submit">Simul Livy</button>
-        </form>
-    """
-
+will_change_simul = change_simul.is_set()
 change_simul.reset()
 
+print("<br>change simul = {}".format(will_change_simul))
+
+if will_change_simul:
+    if simul.is_set():
+        html += """
+        <form action="/index.py" method="post" name="simul">
+            <br> Currently using real Livy"""
+        simul.reset()
+        html += variables.to_form()
+        html += """<button type="submit">Simul Livy</button>
+        </form>
+        """
+    else:
+        html += """
+        <form action="/index.py" method="post">
+            <br> Currently simulate Livy"""
+        simul.set(1)
+        html += variables.to_form()
+        html += """<button type="submit">Use real Livy</button>
+            </form>
+        """
+else:
+    if simul.is_set():
+        html += """
+        <form action="/index.py" method="post">
+            <br> Currently simulate Livy"""
+        change_simul.set(1)
+        html += variables.to_form()
+        html += """<button type="submit">Use real Livy</button>
+            </form>
+        """
+    else:
+        html += """
+            <form action="/index.py" method="post" name="simul">
+                <br> Currently using real Livy"""
+        change_simul.set(1)
+        html += variables.to_form()
+        html += """<button type="submit">Simul Livy</button>
+            </form>
+        """
+
+change_simul.reset()
 
 # Manage Livy session & Spark statements
 html += """
@@ -239,8 +260,10 @@ else:
         html += """<br>No session<br>"""
         waiting_session.set(0)
 
+        """
         if not simul.is_set():
             pass
+        """
 
         print(waiting_session.debug())
 
