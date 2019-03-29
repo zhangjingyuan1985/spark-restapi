@@ -98,7 +98,7 @@ class Variable:
         return False
 
 
-VariableNames = ["session", "waiting_session", "waiting_statement", "statement"]
+VariableNames = ["simul", "session", "waiting_session", "waiting_statement", "statement"]
 
 class VariableSet:
     def __init__(self):
@@ -150,25 +150,48 @@ html = """
   <div class="hero-text">
     <h1 style="font-size:50px">Fink</h1>
     <h3>Alert dataset monitor</h3>
-    <div class="topnav">
+    <div class="topnav"> """
 
-    <form action="/index.py" method="post">
-        """
 
+simul = variables.variable("simul")
 session = variables.variable("session")
 waiting_session = variables.variable("waiting_session")
 waiting_statement = variables.variable("waiting_statement")
 statement = variables.variable("statement")
 
+
+if simul.is_set():
+    simul.reset()
+    html += """
+        <form action="/index.py" method="post">
+            <br> Currently using real Livy"""
+    html += variables.to_form()
+    html += """<button type="submit">Simul Livy</button>
+        </form>
+    """
+else:
+    simul.set(1)
+    html += """
+        <form action="/index.py" method="post">
+            <br> Currently simulate Livy"""
+    html += variables.to_form()
+    html += """<button type="submit">Use real Livy</button>
+        </form>
+    """
+
+html += """
+    <form action="/index.py" method="post">
+        """
+
 if waiting_session.above(5):
-    print("<br> AA")
+    print("<br> session is now idle")
     waiting_session.reset()
     waiting_statement.reset()
     statement.reset()
     session.set(1)
 
 if waiting_statement.above(5):
-    print("<br> BB")
+    print("<br> statement just finished")
     waiting_session.reset()
     waiting_statement.reset()
     statement.incr()
@@ -181,18 +204,19 @@ print(variables.debug())
 
 
 if session.is_set():
-    html += """<br>1<br>"""
     if not waiting_statement.is_set():
-        waiting_statement.set(1)
+        html += """<br>session is idle start a staement<br>"""
+        waiting_statement.set(0)
         html += variables.to_form()
         html += """Enter a Spark statement <input type="text" name="new_statement" value="code" />"""
     else:
+        html += """<br>session is idle waiting a staement to complete<br>"""
         waiting_statement.incr()
         html += variables.to_form()
         html += """<button type="submit">waiting statement</button>"""
 elif not waiting_session.is_set():
-    html += """<br>2<br>"""
-    waiting_session.set(1)
+    html += """<br>No session<br>"""
+    waiting_session.set(0)
 
     print(waiting_session.debug())
 
@@ -200,7 +224,7 @@ elif not waiting_session.is_set():
     html += variables.to_form()
     html += """<button type="submit">Open a session</button>"""
 else:
-    html += """<br>3<br>"""
+    html += """<br>Waiting session to become idle<br>"""
     waiting_session.incr()
     html += variables.to_form()
     html += """<button type="submit">waiting session</button>"""
