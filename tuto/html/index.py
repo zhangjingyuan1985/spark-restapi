@@ -213,6 +213,7 @@ Command interface
 """
 
 if session.is_set():
+    # statement management
     if not waiting_statement.is_set():
         html += """<br>session is idle start a staement<br>"""
         waiting_statement.set(0)
@@ -223,23 +224,25 @@ if session.is_set():
         waiting_statement.incr()
         html += variables.to_form()
         html += """<button type="submit">waiting statement</button>"""
-elif not waiting_session.is_set():
-    html += """<br>No session<br>"""
-    waiting_session.set(0)
-
-    if not simul.is_set():
-        pass
-
-    print(waiting_session.debug())
-
-    waiting_statement.reset()
-    html += variables.to_form()
-    html += """<button type="submit">Open a session</button>"""
 else:
-    html += """<br>Waiting session to become idle<br>"""
-    waiting_session.incr()
-    html += variables.to_form()
-    html += """<button type="submit">waiting session</button>"""
+    # session management
+    elif not waiting_session.is_set():
+        html += """<br>No session<br>"""
+        waiting_session.set(0)
+
+        if not simul.is_set():
+            pass
+
+        print(waiting_session.debug())
+
+        waiting_statement.reset()
+        html += variables.to_form()
+        html += """<button type="submit">Open a session</button>"""
+    else:
+        html += """<br>Waiting session to become idle<br>"""
+        waiting_session.incr()
+        html += variables.to_form()
+        html += """<button type="submit">waiting session</button>"""
 
 html += """</form>"""
 
