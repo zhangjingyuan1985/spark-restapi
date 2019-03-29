@@ -46,18 +46,180 @@ https://pylivy.readthedocs.io/en/latest/index.web
 
 """
 
+
+# Initialize post variables
+class Variable:
+    def __init__(self, name):
+        self.name = name
+        self.value = None
+
+    def read(self):
+        try:
+            self.value = int(form.getvalue(self.name))
+        except:
+            self.value = -1
+
+    def to_form(self):
+        out = """<input type="hidden" name="{}" value="{}" />""".format(self.name, self.value)
+        return out
+
+    def debug(self):
+        out = "<br> {} = {}\n".format(self.name, self.value)
+        return out
+
+    def reset(self):
+        self.value = -1
+
+    def set(self, value):
+        try:
+            self.value = int(value)
+        except:
+            self.value = -1
+
+    def is_set(self):
+        try:
+            if self.value >= 0:
+                return True
+        except:
+            pass
+
+        return False
+
+    def incr(self):
+        self.value += 1
+
+    def above(self, threshold):
+        try:
+            if self.value > threshold:
+                return True
+        except:
+            pass
+
+        return False
+
+
+VariableNames = ["session", "waiting_session", "waiting_statement", "statement"]
+
+class VariableSet:
+    def __init__(self):
+        self.base = dict()
+
+        for name in VariableNames:
+            self.base[name] = Variable(name)
+
+    def variable(self, name):
+        return self.base[name]
+
+    def read(self):
+        for v in self.base:
+            self.base[v].read()
+
+    def to_form(self):
+        out = ""
+        for v in self.base:
+            out += self.base[v].to_form()
+        return out
+
+    def debug(self):
+        out = ""
+        for v in self.base:
+            out += self.base[v].debug()
+        return out
+
+
 LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
 
 
 form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
-name = ""
-print(form.getvalue("name"))
 
-print(",".join(form.keys()))
+variables = VariableSet()
+variables.read()
 
-print(form.getvalue("session"))
+# ======================================================
+
+html = """
+<!DOCTYPE html>
+<head>
+    <link rel="stylesheet" type="text/css" href="css/finkstyle.css">
+    <title>Mon programme test</title>
+</head>
+<body>
+<div class="hero-image">
+  <div class="hero-text">
+    <h1 style="font-size:50px">Fink</h1>
+    <h3>Alert dataset monitor</h3>
+    <div class="topnav">
+
+    <form action="/index.py" method="post">
+        """
+
+session = variables.variable("session")
+waiting_session = variables.variable("waiting_session")
+waiting_statement = variables.variable("waiting_statement")
+statement = variables.variable("statement")
+
+if waiting_session.above(5):
+    print("<br> AA")
+    waiting_session.reset()
+    waiting_statement.reset()
+    statement.reset()
+    session.set(1)
+
+if waiting_statement.above(5):
+    print("<br> BB")
+    waiting_session.reset()
+    waiting_statement.reset()
+    statement.incr()
+
+# debugging
+print("<br>")
+print("Keys = [", ",".join(form.keys()), "]")
+print(variables.debug())
+# =================================
+
+
+if session.is_set():
+    html += """<br>1<br>"""
+    if not waiting_statement.is_set():
+        waiting_statement.set(1)
+        html += variables.to_form()
+        html += """Enter a Spark statement <input type="text" name="new_statement" value="code" />"""
+    else:
+        waiting_statement.incr()
+        html += variables.to_form()
+        html += """<button type="submit">waiting statement</button>"""
+elif not waiting_session.is_set():
+    html += """<br>2<br>"""
+    waiting_session.set(1)
+
+    print(waiting_session.debug())
+
+    waiting_statement.reset()
+    html += variables.to_form()
+    html += """<button type="submit">Open a session</button>"""
+else:
+    html += """<br>3<br>"""
+    waiting_session.incr()
+    html += variables.to_form()
+    html += """<button type="submit">waiting session</button>"""
+
+html += """</form>"""
+
+html += """
+      </div>
+    <p>&copy; AstroLab Software 2018-2019</p>
+  </div>
+</div>
+
+</body>
+</html>
+"""
+
+
+print(html)
+
 
 """
 print("Create a session ")
@@ -87,38 +249,3 @@ if code != "":
     print("result = ", result)
 """
 
-session = 123
-
-html = """
-<!DOCTYPE html>
-<head>
-    <link rel="stylesheet" type="text/css" href="css/finkstyle.css">
-    <title>Mon programme test</title>
-</head>
-<body>
-<div class="hero-image">
-  <div class="hero-text">
-    <h1 style="font-size:50px">Fink</h1>
-    <h3>Alert dataset monitor</h3>
-    <div class="topnav">
-
-    <form action="/index.py" method="post">
-        Give your name:<input type="text" name="name" value="Votre nom" />
-        <br>
-        Enter a Spark statement <input type="text" name="statement" value="code" />
-        <br>
-        <input type="hidden" name="session" value={}
-        <br>
-        Send: <input type="submit" name="send" value="Envoyer information au serveur">
-    </form> 
-      </div>
-    <p>&copy; AstroLab Software 2018-2019</p>
-  </div>
-</div>
-
-</body>
-</html>
-""".format(session)
-
-
-print(html)
