@@ -98,13 +98,11 @@ class Variable:
         return False
 
 
-VariableNames = ["simul", "session", "waiting_session", "waiting_statement", "statement"]
-
 class VariableSet:
-    def __init__(self):
+    def __init__(self, names):
         self.base = dict()
 
-        for name in VariableNames:
+        for name in names:
             self.base[name] = Variable(name)
 
     def variable(self, name):
@@ -134,10 +132,12 @@ form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
 # init data
-variables = VariableSet()
+variables = VariableSet(["simul", "change_simul", "session", "waiting_session", "waiting_statement", "statement"])
 variables.read()
 
 simul = variables.variable("simul")
+simul.set(1)
+change_simul = variables.variable("change_simul")
 session = variables.variable("session")
 waiting_session = variables.variable("waiting_session")
 waiting_statement = variables.variable("waiting_statement")
@@ -160,27 +160,31 @@ html = """
 
 # manage Livy simulation
 if simul.is_set():
-    simul.reset()
     html += """
-        <form action="/index.py" method="post">
-            <br> Currently using real Livy"""
+    <form action="/index.py" method="post">
+        <br> Currently simulate Livy"""
+    if change_simul.is_set():
+        simul.set(1)
+        change_simul.reset()
     html += variables.to_form()
-    html += """<button type="submit">Simul Livy</button>
+    html += """<button type="submit">Use real Livy</button>
         </form>
     """
 else:
-    simul.set(1)
     html += """
-        <form action="/index.py" method="post">
-            <br> Currently simulate Livy"""
+        <form action="/index.py" method="post" name="simul">
+            <br> Currently using real Livy"""
+    if change_simul.is_set():
+        simul.reset()
+        change_simul.reset()
     html += variables.to_form()
-    html += """<button type="submit">Use real Livy</button>
+    html += """<button type="submit">Simul Livy</button>
         </form>
     """
 
 # Manage Livy session & Spark statements
 html += """
-    <form action="/index.py" method="post">
+    <form action="/index.py" method="post" name="operations">
         """
 
 if waiting_session.above(5):
