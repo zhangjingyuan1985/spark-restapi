@@ -127,15 +127,21 @@ class VariableSet:
         return out
 
 
+# ======================================================
 LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
-
 
 form = cgi.FieldStorage()
 print("Content-type: text/html; charset=utf-8\n")
 
-
+# init data
 variables = VariableSet()
 variables.read()
+
+simul = variables.variable("simul")
+session = variables.variable("session")
+waiting_session = variables.variable("waiting_session")
+waiting_statement = variables.variable("waiting_statement")
+statement = variables.variable("statement")
 
 # ======================================================
 
@@ -152,14 +158,7 @@ html = """
     <h3>Alert dataset monitor</h3>
     <div class="topnav"> """
 
-
-simul = variables.variable("simul")
-session = variables.variable("session")
-waiting_session = variables.variable("waiting_session")
-waiting_statement = variables.variable("waiting_statement")
-statement = variables.variable("statement")
-
-
+# manage Livy simulation
 if simul.is_set():
     simul.reset()
     html += """
@@ -179,6 +178,7 @@ else:
         </form>
     """
 
+# Manage Livy session & Spark statements
 html += """
     <form action="/index.py" method="post">
         """
@@ -200,8 +200,13 @@ if waiting_statement.above(5):
 print("<br>")
 print("Keys = [", ",".join(form.keys()), "]")
 print(variables.debug())
-# =================================
 
+"""
+Command interface
+- select Livy simulation
+- open session & wait for idle
+- start statement & wait for completion
+"""
 
 if session.is_set():
     if not waiting_statement.is_set():
@@ -217,6 +222,9 @@ if session.is_set():
 elif not waiting_session.is_set():
     html += """<br>No session<br>"""
     waiting_session.set(0)
+
+    if not simul.is_set():
+        pass
 
     print(waiting_session.debug())
 
