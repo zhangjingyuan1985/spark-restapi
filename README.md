@@ -4,6 +4,10 @@ Web based utilities to view alerts datasets that are accessible to fink brokers
 
 We'll be using Livy to setup a remote access to the Spark engine
 
+# Design
+
+![Monitor design](https://github.com/astrolabsoftware/fink_data_monitor/blob/master/doc/Design.gif)
+
 # Tuto
 
 To evaluate technology this directory contains some exercises on
