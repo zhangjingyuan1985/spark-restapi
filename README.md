@@ -2,7 +2,7 @@
 Web based utilities to view alerts datasets that are accessible to fink brokers 
 ================================================================================
 
-We'll be using Livy to et a remote access to the Spark engine
+We'll be using Livy to setup a remote access to the Spark engine
 
 # Tuto
 
@@ -17,7 +17,4 @@ To evaluate technology this directory contains some exercises on
    
    https://pylivy.readthedocs.io/en/latest/index.html
    
-   
-
-
 
