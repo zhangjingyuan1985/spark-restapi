@@ -26,12 +26,25 @@ class HTMLVariable:
     "str" variables are considered "set" when they non empty (not "")
     """
 
-    def __init__(self, name, type="int"):
+    def __init__(self, name: str, type="int"):
         """
         initalizer. Default type is "int"
-        :param name:
-        :param type:
+
+        Parameters
+        ----------
+        name: str
+          Variable name
+        type: str
+          Variable type can be "int" or "str"
+
+        Examples
+        --------
+        >>> variable = HTMLVariable("name")
+        >>> print(type(variable))
+        <class 'variables.HTMLVariable'>
+
         """
+
         self.name = name
         self.type = type
         self.reset()
@@ -39,7 +52,16 @@ class HTMLVariable:
     def read(self):
         """
         Try and get values from the GET/POST values
-        :return:
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Examples
+        --------
+
         """
         try:
             if self.type == "int":
@@ -57,7 +79,19 @@ class HTMLVariable:
     def to_form(self):
         """
         format the variable value to be sent as a hidden HTML parameter
-        :return:
+
+        Parameters
+        ----------
+        Returns
+        -------
+        out: str
+
+        Examples
+        --------
+        >>> variable = HTMLVariable("name")
+        >>> variable.to_form()
+        '<input type="hidden" name="name" value="-1" />'
+
         """
         out = """<input type="hidden" name="{}" value="{}" />""".format(self.name, self.value)
         return out
@@ -65,15 +99,41 @@ class HTMLVariable:
     def debug(self):
         """
         Format a variable value tu be displayed on a web page
-        :return:
+
+        Parameters
+        ----------
+        Returns
+        -------
+        out: str
+
+        Examples
+        --------
+        >>> variable = HTMLVariable("name")
+        >>> print(variable.debug())
+         name=-1
+        <BLANKLINE>
         """
-        out = " {} = {}\n".format(self.name, self.value)
+        out = " {}={}\n".format(self.name, self.value)
         return out
 
     def reset(self):
         """
         Apply the convention to be "unset" according to variable type
-        :return:
+        Parameters
+        ----------
+        Returns
+        -------
+        Examples
+        --------
+        >>> variable = HTMLVariable("abc")
+        >>> print(variable.debug())
+         abc=-1
+        <BLANKLINE>
+
+        >>> variable.reset()
+        >>> print(variable.debug())
+         abc=-1
+        <BLANKLINE>
         """
         if self.type == "int":
             self.value = -1
@@ -84,7 +144,26 @@ class HTMLVariable:
     def set(self, value):
         """
         Apply the convention to be "set" according to variable type, and assign a value
-        :return:
+        Parameters
+        ----------
+        value: str or int
+
+        Returns
+        -------
+        Examples
+        --------
+        >>> variable = HTMLVariable("abc")
+        >>> variable.set(123)
+        >>> print(variable.debug())
+         abc=123
+        <BLANKLINE>
+
+        >>> variable = HTMLVariable("abc", type="str")
+        >>> variable.set("xyz")
+        >>> print(variable.debug())
+         abc=xyz
+        <BLANKLINE>
+
         """
         if self.type == "int":
             try:
@@ -97,7 +176,24 @@ class HTMLVariable:
     def is_set(self):
         """
         Ask whether the variable is considered as "set" (following the convention)
-        :return:
+        Parameters
+        ----------
+        Returns
+        -------
+        status = Boolean
+
+        Examples
+        --------
+        >>> variable = HTMLVariable("abc", type="str")
+        >>> test = variable.is_set()
+        >>> print(test)
+        False
+
+        >>> variable.set("xyz")
+        >>> test = variable.is_set()
+        >>> print(test)
+        True
+
         """
         if self.type == "int":
             try:
@@ -117,7 +213,18 @@ class HTMLVariable:
     def incr(self):
         """
         Increment an "int" typed variable
-        :return:
+        Parameters
+        ----------
+        Returns
+        -------
+        Examples
+        --------
+        >>> variable = HTMLVariable("abc")
+        >>> variable.set(123)
+        >>> variable.incr()
+        >>> print(variable.debug())
+         abc=124
+        <BLANKLINE>
         """
         if self.type == "int":
             self.value += 1
@@ -125,8 +232,22 @@ class HTMLVariable:
     def above(self, threshold):
         """
         Test an "int" variable if its vaue is above a threshold
-        :param threshold:
-        :return:
+        Parameters
+        ----------
+        threshold: int
+
+        Returns
+        -------
+        status: Boolean
+
+        Examples
+        --------
+        >>> variable = HTMLVariable("abc")
+        >>> variable.set(123)
+        >>> test = variable.above(124)
+        >>> print(test)
+        False
+
         """
         if self.type == "int":
             try:
@@ -143,32 +264,121 @@ class HTMLVariableSet:
     Database of all the WEB variables of the application
     """
 
-    def __init__(self, names, str_names):
+    def __init__(self, int_names, str_names):
+        """
+        constructor for a set of HTMLVariable objects
+        One may provide two lists of variable names: one for int variables, and one for str variables
+
+        Parameters
+        ----------
+        int_names: List<str>
+        str_names: List<str>
+
+        Returns
+        -------
+
+        Examples
+        --------
+        >>> variables = HTMLVariableSet(["a", "b", "c"], ["d"])
+        >>> print(variables.debug())
+         a=-1
+         b=-1
+         c=-1
+         d=
+        <BLANKLINE>
+        """
         type = "int"
 
-        for name in names:
-            if name in str_names:
-                type = "str"
-            else:
-                type = "int"
-            self.__dict__[name] = HTMLVariable(name, type)
+        for name in int_names:
+            self.__dict__[name] = HTMLVariable(name, "int")
 
-    def variable(self, name):
+        for name in str_names:
+            self.__dict__[name] = HTMLVariable(name, "str")
+
+    def variable(self, name) -> HTMLVariable:
+        """
+        Get the HTMLVariable from its name
+
+        Parameters
+        ----------
+        name: str
+
+        Returns
+        -------
+        Examples
+        --------
+        >>> variables = HTMLVariableSet(["a", "b", "c"], ["d"])
+        >>> print(type(variables.a))
+        <class 'variables.HTMLVariable'>
+        """
         return self.__dict__[name]
 
     def read(self):
+        """
+        Read all HTML POST/GET variables
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Examples
+        --------
+        """
         for v in self.__dict__:
             self.__dict__[v].read()
 
     def to_form(self):
+        """
+        format all the variable values to be sent as a hidden HTML parameter
+
+
+        Parameters
+        ----------
+        Returns
+        -------
+        out: str
+
+        Examples
+        --------
+        >>> variables = HTMLVariableSet(["a", "b", "c"], ["d"])
+        >>> print(variables.debug())
+         a=-1
+         b=-1
+         c=-1
+         d=
+        <BLANKLINE>
+        """
         out = ""
         for v in self.__dict__:
             out += self.__dict__[v].to_form()
         return out
 
     def debug(self):
+        """
+        Format all the variable values tu be displayed on a web page
+
+        Parameters
+        ----------
+        Returns
+        -------
+        out: str
+
+        Examples
+        --------
+        >>> variables = HTMLVariableSet(["a", "b", "c"], ["d"])
+        >>> print(variables.debug())
+         a=-1
+         b=-1
+         c=-1
+         d=
+        <BLANKLINE>
+        """
         out = ""
         for v in self.__dict__:
             out += self.__dict__[v].debug()
         return out
 
+if __name__ == "__main__":
+    """ Execute the test suite """

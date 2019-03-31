@@ -57,9 +57,8 @@ html = HTMLVariableSet(["start",
                          "waiting_session",
                          "waiting_statement",
                          "livy_statement",
-                         "new_statement",
-                         "kill_session",
-                         "result"], ["new_statement", "result"])
+                         "kill_session"],
+                        ["new_statement", "result"])
 
 html.read()
 
