@@ -19,7 +19,7 @@
 
 """
 
-The index.py script has to be present on the <host> machine
+The indextry.py script has to be present on the <host> machine
 
 where the minimal HTML server has been activated as
 
@@ -27,7 +27,7 @@ where the minimal HTML server has been activated as
 
 Then, call in a web navigator the URL
 
-http://<host>:24701/index.py
+http://<host>:24701/indextry.py
 
 https://python-django.dev/page-python-serveur-web-creer-rapidement
 """
@@ -219,7 +219,7 @@ print("<br>change simul = {}".format(will_change_simul))
 if will_change_simul:
     if simul.is_set():
         html += """
-        <form action="/index.py" method="post" name="simul">
+        <form action="/indextry.py" method="post" name="simul">
             <br> Currently using real Livy"""
         simul.reset()
         html += variables.to_form()
@@ -228,7 +228,7 @@ if will_change_simul:
         """
     else:
         html += """
-        <form action="/index.py" method="post">
+        <form action="/indextry.py" method="post">
             <br> Currently simulate Livy"""
         simul.set(1)
         html += variables.to_form()
@@ -238,7 +238,7 @@ if will_change_simul:
 else:
     if simul.is_set():
         html += """
-        <form action="/index.py" method="post">
+        <form action="/indextry.py" method="post">
             <br> Currently simulate Livy"""
         change_simul.set(1)
         html += variables.to_form()
@@ -247,7 +247,7 @@ else:
         """
     else:
         html += """
-            <form action="/index.py" method="post" name="simul">
+            <form action="/indextry.py" method="post" name="simul">
                 <br> Currently using real Livy"""
         change_simul.set(1)
         html += variables.to_form()
@@ -259,7 +259,7 @@ change_simul.reset()
 
 # Manage Livy session & Spark statements
 html += """
-    <form action="/index.py" method="post" name="operations">
+    <form action="/indextry.py" method="post" name="operations">
         """
 
 if simul.is_set():
@@ -371,7 +371,7 @@ html += """</form>"""
 
 if livy_session.is_set():
     html += """
-    <form action="/index.py" method="post" name="operations">"""
+    <form action="/indextry.py" method="post" name="operations">"""
 
     kill_session.set(1)
     html += variables.to_form()
@@ -396,23 +396,4 @@ html += """
 
 print(html)
 
-
-"""
-
-code = form.getvalue("statement")
-if code != "":
-    print("direct execution of a statement ", code)
-
-    st = client.create_statement(s.session_id, code)
-
-    print("... wait until available ...")
-    result = ""
-    while True:
-        st = client.get_statement(session.session_id, st.statement_id)
-        if st.state == StatementState.AVAILABLE:
-            result = st.output.text
-            break
-
-    print("result = ", result)
-"""
 

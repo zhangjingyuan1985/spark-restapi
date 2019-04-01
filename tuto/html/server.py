@@ -24,9 +24,9 @@ run in the <host> machine as
 
 Then, call in a web navigator the URL
 
-http://<host>:24701/index.py
+http://<host>:24701/indextry.py
 
-The index.py script has to be present on the <host> machine 
+The indextry.py script has to be present on the <host> machine
 
 https://python-django.dev/page-python-serveur-web-creer-rapidement
 """
