@@ -49,7 +49,7 @@ class HTMLVariable:
         self.type = type
         self.reset()
 
-    def read(self):
+    def read(self, form):
         """
         Try and get values from the GET/POST values
 
@@ -310,10 +310,19 @@ class HTMLVariableSet:
         >>> variables = HTMLVariableSet(["a", "b", "c"], ["d"])
         >>> print(type(variables.a))
         <class 'variables.HTMLVariable'>
+
+        >>> variables.a.set(123)
+        >>> print(variables.a.value)
+        123
+
+        >>> variables.d.set("xxx")
+        >>> print(variables.d.value)
+        xxx
+
         """
         return self.__dict__[name]
 
-    def read(self):
+    def read(self, form):
         """
         Read all HTML POST/GET variables
 
@@ -327,7 +336,7 @@ class HTMLVariableSet:
         --------
         """
         for v in self.__dict__:
-            self.__dict__[v].read()
+            self.__dict__[v].read(form)
 
     def to_form(self):
         """
@@ -352,7 +361,8 @@ class HTMLVariableSet:
         """
         out = ""
         for v in self.__dict__:
-            out += self.__dict__[v].to_form()
+            out += self.__dict__[v].to_form() + "\n"
+
         return out
 
     def debug(self):

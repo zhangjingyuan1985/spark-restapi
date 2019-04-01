@@ -39,7 +39,8 @@ http://<host>:24701/monitor.py
 import cgi
 from pylivy.session import *
 from pylivy.client import *
-from variables import *
+from variables import HTMLVariableSet
+
 
 # ======================================================
 LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
@@ -50,91 +51,136 @@ print("Content-type: text/html; charset=utf-8\n")
 client = LivyClient(LIVY_URL)
 
 # init data
-html = HTMLVariableSet(["start",
-                         "simul",
-                         "change_simul",
-                         "livy_session",
-                         "waiting_session",
-                         "waiting_statement",
-                         "livy_statement",
-                         "kill_session"],
-                        ["new_statement", "result"])
+html = HTMLVariableSet(["started",
+                        "simul",
+                        "change_simul",
+                        "livy_session",
+                        "waiting_session",
+                        "waiting_statement",
+                        "livy_statement",
+                        "kill_session"],
+                       ["new_statement", "result"])
 
-html.read()
+url = "/monitor.py"
+method = "POST"
 
-if not html.start.is_set():
+# ======================================================
+
+
+def html_header():
+    """
+    Global & common html header. SHould be used everywhere
+
+    Returns:
+    --------
+    out: str
+    """
+    return """
+    <!DOCTYPE html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="css/finkstyle.css">
+        <title>Mon programme test</title>
+    </head>
+    <body>
+    <div class="hero-image">
+      <div class="hero-text">
+        <h1 style="font-size:50px">Fink</h1>
+        <h3>Alert dataset monitor</h3>
+        <div class="topnav"> """
+
+
+def html_trailer():
+    """
+    Global & common html trailer. SHould be used everywhere
+
+    Returns:
+    --------
+    out: str
+    """
+    return """
+      </div>
+    <p>&copy; AstroLab Software 2018-2019</p>
+  </div>
+</div>
+
+</body>
+</html>
+"""
+
+def html_manage_simulation_mode(out: str) -> str:
+    # manage Livy simulation
+    will_change_simul = html.change_simul.is_set()
+
+    print("<br>change simul = {}".format(will_change_simul))
+
+    html.change_simul.reset()
+
+    if will_change_simul:
+        if html.simul.is_set():
+            out += """<form action="{}" method="{}">""".format(url, method)
+            out += """
+                <br> Currently using real Livy"""
+            html.simul.reset()
+            out += html.to_form()
+            out += """<button type="submit">Simul Livy</button>
+            </form>
+            """
+        else:
+            out += """<form action="{}" method="{}">""".format(url, method)
+            out += """
+                <br> Currently simulate Livy """
+            html.simul.set(1)
+            out += html.to_form()
+            out += """<button type="submit">Use real Livy</button>
+                </form>
+            """
+    else:
+        if html.simul.is_set():
+            out += """<form action="{}" method="{}">""".format(url, method)
+            out += """
+                <br> Currently simulate Livy&nbsp;"""
+            html.change_simul.set(1)
+            out += html.to_form()
+            out += """
+                <button type="submit">Use real Livy</button>
+            </form>
+            """
+        else:
+            out += """<form action="{}" method="{}">""".format(url, method)
+            out += """
+                <br> Currently using real Livy"""
+            html.change_simul.set(1)
+            out += html.to_form()
+            out += """
+                <button type="submit">Simul Livy</button>
+            </form>
+            """
+        # out += html.debug()
+
+    html.change_simul.reset()
+
+    return out
+
+
+# Read all HTML POST variables
+html.read(form)
+
+if not html.started.is_set():
+    # Handle the very first launch to set the default
     html.simul.set(1)
-    html.start.set(1)
-
+    html.started.set(1)
 
 # ======================================================
 # the start of the WEB page
 # ======================================================
-out = """
-<!DOCTYPE html>
-<head>
-    <link rel="stylesheet" type="text/css" href="css/finkstyle.css">
-    <title>Mon programme test</title>
-</head>
-<body>
-<div class="hero-image">
-  <div class="hero-text">
-    <h1 style="font-size:50px">Fink</h1>
-    <h3>Alert dataset monitor</h3>
-    <div class="topnav"> """
+out = html_header()
 
-# manage Livy simulation
+out = html_manage_simulation_mode(out)
 
-will_change_simul = html.change_simul.is_set()
-html.change_simul.reset()
-
-print("<br>change simul = {}".format(will_change_simul))
-
-if will_change_simul:
-    if html.simul.is_set():
-        out += """
-        <form action="/monitor.py" method="post" name="simul">
-            <br> Currently using real Livy"""
-        html.simul.reset()
-        out += html.to_form()
-        out += """<button type="submit">Simul Livy</button>
-        </form>
-        """
-    else:
-        out += """
-        <form action="/monitor.py" method="post">
-            <br> Currently simulate Livy"""
-        html.simul.set(1)
-        out += html.to_form()
-        out += """<button type="submit">Use real Livy</button>
-            </form>
-        """
-else:
-    if html.simul.is_set():
-        out += """
-        <form action="/monitor.py" method="post">
-            <br> Currently simulate Livy"""
-        html.change_simul.set(1)
-        out += html.to_form()
-        out += """<button type="submit">Use real Livy</button>
-            </form>
-        """
-    else:
-        out += """
-            <form action="/monitor.py" method="post" name="simul">
-                <br> Currently using real Livy"""
-        html.change_simul.set(1)
-        out += html.to_form()
-        out += """<button type="submit">Simul Livy</button>
-            </form>
-        """
-
-html.change_simul.reset()
+# out += html.debug()
 
 # Manage Livy session & Spark statements
-out += """
-    <form action="/monitor.py" method="post" name="operations">
-        """
+out += """<form action="{}" method="{}">""".format(url, method)
 
 if html.simul.is_set():
     if html.waiting_session.above(5):
@@ -153,7 +199,7 @@ if html.simul.is_set():
 # debugging
 # print("<br>")
 # print("Keys = [", ",".join(form.keys()), "]")
-print(html.debug())
+# print(html.debug())
 
 """
 Command interface
@@ -163,11 +209,11 @@ Command interface
 """
 
 if html.kill_session.is_set():
-    id = html.livy_session.value
+    session_id = html.livy_session.value
     try:
-        client.delete_session(id)
+        client.delete_session(session_id)
     except:
-        print("error killing session ", id)
+        print("error killing session ", session_id)
 
     html.livy_session.reset()
     html.waiting_session.reset()
@@ -188,8 +234,7 @@ if html.livy_session.is_set():
     else:
         out += """<br>session is idle, we do wait a statement to complete<br>"""
         html.waiting_statement.incr()
-        id = html.livy_session.value
-        s = client.get_session(id)
+        s = client.get_session(html.livy_session.value)
         if not html.livy_statement.is_set():
             st = client.create_statement(s.session_id, html.new_statement.value)
             html.livy_statement.set(st.statement_id)
@@ -209,7 +254,7 @@ else:
         out += """<br>No session<br>"""
         html.waiting_session.set(0)
 
-        print(html.waiting_session.debug())
+        # print(html.waiting_session.debug())
 
         html.waiting_statement.reset()
         out += html.to_form()
@@ -228,8 +273,7 @@ else:
                 html.livy_session.set(s.session_id)
 
             # we test if the session is already idle
-            id = html.livy_session.value
-            s = client.get_session(id)
+            s = client.get_session(html.livy_session.value)
             if s.state == SessionState.IDLE:
                 print("<br> session is now idle")
                 html.waiting_session.reset()
@@ -244,9 +288,7 @@ else:
 out += """</form>"""
 
 if html.livy_session.is_set():
-    out += """
-    <form action="/monitor.py" method="post" name="operations">"""
-
+    out += """<form action="{}" method="{}">""".format(url, method)
     html.kill_session.set(1)
     out += html.to_form()
     out += """
@@ -254,14 +296,7 @@ if html.livy_session.is_set():
     </form>
     """
 
-out += """
-      </div>
-    <p>&copy; AstroLab Software 2018-2019</p>
-  </div>
-</div>
-
-</body>
-</html>
-"""
+out += html_trailer()
 
 print(out)
+

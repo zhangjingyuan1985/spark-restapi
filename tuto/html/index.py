@@ -167,32 +167,17 @@ client = LivyClient(LIVY_URL)
 # init data
 variables = VariableSet(["start",
                          "simul",
-                         "change_simul",
-                         "livy_session",
-                         "waiting_session",
-                         "waiting_statement",
-                         "livy_statement",
-                         "new_statement",
-                         "kill_session",
-                         "result"], ["new_statement", "result"])
+                         "change_simul"], [])
 
 start = variables.base["start"]
 simul = variables.base["simul"]
 change_simul = variables.base["change_simul"]
-livy_session = variables.base["livy_session"]
-waiting_session = variables.base["waiting_session"]
-waiting_statement = variables.base["waiting_statement"]
-livy_statement = variables.base["livy_statement"]
-kill_session = variables.base["kill_session"]
-new_statement = variables.base["new_statement"]
-result = variables.base["result"]
 
 variables.read()
 
 if not start.is_set():
     simul.set(1)
     start.set(1)
-
 
 # ======================================================
 
@@ -256,132 +241,7 @@ else:
         """
 
 change_simul.reset()
-
-# Manage Livy session & Spark statements
-html += """
-    <form action="/index.py" method="post" name="operations">
-        """
-
-if simul.is_set():
-    if waiting_session.above(5):
-        print("<br> session is now idle")
-        waiting_session.reset()
-        waiting_statement.reset()
-        livy_statement.reset()
-        livy_session.set(1)
-
-    if waiting_statement.above(5):
-        print("<br> statement just finished")
-        waiting_session.reset()
-        waiting_statement.reset()
-        livy_statement.incr()
-
-# debugging
-# print("<br>")
-# print("Keys = [", ",".join(form.keys()), "]")
 print(variables.debug())
-
-"""
-Command interface
-- select Livy simulation
-- open session & wait for idle
-- start statement & wait for completion
-"""
-
-if kill_session.is_set():
-    id = livy_session.value
-    try:
-        client.delete_session(id)
-    except:
-        print("error killing session ", id)
-
-    livy_session.reset()
-    waiting_session.reset()
-    kill_session.reset()
-
-if livy_session.is_set():
-    # statement management
-    if not waiting_statement.is_set():
-        html += """<br>session is idle: we may start a statement<br>"""
-        waiting_statement.set(0)
-        html += variables.to_form()
-        html += """
-        Enter a Spark statement 
-        <input type="text" name="new_statement" value="{}" /> 
-        <input type="text" name="result" value="{}" />
-        <button type="submit">Run</button>        
-        """.format(new_statement.value, result.value)
-    else:
-        html += """<br>session is idle, we do wait a statement to complete<br>"""
-        waiting_statement.incr()
-        id = livy_session.value
-        s = client.get_session(id)
-        if not livy_statement.is_set():
-            st = client.create_statement(s.session_id, new_statement.value)
-            livy_statement.set(st.statement_id)
-        else:
-            st = client.get_statement(s.session_id, livy_statement.value)
-            if st.state == StatementState.AVAILABLE:
-                waiting_statement.reset()
-                result.set(st.output.text)
-                print("<br>", result.value)
-                livy_statement.reset()
-
-        html += variables.to_form()
-        html += """<button type="submit">waiting statement to complete</button>"""
-else:
-    # session management
-    if not waiting_session.is_set():
-        html += """<br>No session<br>"""
-        waiting_session.set(0)
-
-        print(waiting_session.debug())
-
-        waiting_statement.reset()
-        html += variables.to_form()
-        html += """<button type="submit">Open a session</button>"""
-    else:
-        # we have requested a new session thus waiting_session is set
-
-        if simul.is_set():
-            waiting_session.incr()
-        else:
-
-            if not livy_session.is_set():
-                print("Create a session ")
-                s = client.create_session(SessionKind.PYSPARK)
-                print("<br> session {} <br>".format(s.session_id))
-                livy_session.set(s.session_id)
-
-            # we test if the session is already idle
-            id = livy_session.value
-            s = client.get_session(id)
-            if s.state == SessionState.IDLE:
-                print("<br> session is now idle")
-                waiting_session.reset()
-                waiting_statement.reset()
-                livy_statement.reset()
-                new_statement.reset()
-
-        html += """<br>Waiting session to become idle<br>"""
-        html += variables.to_form()
-        html += """<button type="submit">waiting session</button>"""
-
-html += """</form>"""
-
-if livy_session.is_set():
-    html += """
-    <form action="/index.py" method="post" name="operations">"""
-
-    kill_session.set(1)
-    html += variables.to_form()
-    html += """
-         <button type="submit">Delete the session</button>
-    </form>
-    """
-
-
-
 
 html += """
       </div>
@@ -396,23 +256,4 @@ html += """
 
 print(html)
 
-
-"""
-
-code = form.getvalue("statement")
-if code != "":
-    print("direct execution of a statement ", code)
-
-    st = client.create_statement(s.session_id, code)
-
-    print("... wait until available ...")
-    result = ""
-    while True:
-        st = client.get_statement(session.session_id, st.statement_id)
-        if st.state == StatementState.AVAILABLE:
-            result = st.output.text
-            break
-
-    print("result = ", result)
-"""
 
