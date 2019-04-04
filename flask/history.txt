@@ -1,0 +1,9 @@
+cd flask
+python -m venv venv
+pip install flask-migrate
+venv\Scripts\activate
+flask init-db
+set FLASK_APP=fink_dataset_monitor
+set FLASK_ENV=development
+
+https://openclassrooms.com/fr/courses/1654786-creez-vos-applications-web-avec-flask/1655132-requetes-et-reponses

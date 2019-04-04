@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Statement operations (session={{session_id}})){% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        <li>
+            Statement:
+            <form action="/statementwait" method="post">
+                <input type="text" name="statement" value="{{statement}}">
+
+                <input type="hidden" name="session_id" value="{{session_id}}">
+                <input type="hidden" name="statement" value="{{statement}}">
+                <input type="hidden" name="statement_id" value="{{statement_id}}">
+                <input type="hidden" name="wait_for_available" value="{{wait_for_available}}">
+
+                {% if wait_for_available == 0 %}
+                    <button type="submit">Start a new Spark statement</button>
+                {% else %}
+                    <button type="submit">Wait until Spark statement is available {{wait_for_available}}</button>
+                {% endif %}
+            </form>
+        </li>
+        <li>
+            <a href="{{ url_for('close_session') }}">Close session</a>
+        </li>
+    </ul>
+{% endblock %}

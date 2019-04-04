@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>{% block title %}{% endblock %} - Flaskr</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='finkstyle.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    </head>
+
+    <section class="content">
+        <header>
+            {% block header %}{% endblock %}
+        </header>
+        {% for message in get_flashed_messages() %}
+            <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block content %}
+            <body>
+                <h1>Welcome.</h1>
+                {{request.method}}
+            </body>
+        {% endblock %}
+    </section>
+</html>

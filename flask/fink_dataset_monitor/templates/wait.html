@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Opening the session {{session_id}} {% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        <li>
+            <form action="wait" method="post">
+                <input type="hidden" name="session_id" value="{{session_id}}">
+                <input type="hidden" name="wait_for_idle" value="{{wait_for_idle}}">
+                <button type="submit">Wait until session becomes IDLE ({{wait_for_idle}})</button>
+            </form>
+        </li>
+        <li>
+            <form action="close" method="post">
+                <input type="hidden" name="session_id" value="{{session_id}}">
+                <button type="submit">close session</button>
+            </form>
+        </li>
+    </ul>
+{% endblock %}

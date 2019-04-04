@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Session management{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        <li>
+            <a href="{{ url_for('open_wait_session') }}">Open session</a>
+        </li>
+    </ul>
+{% endblock %}
