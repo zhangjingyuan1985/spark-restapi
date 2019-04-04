@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Session operations ... ({{session_id}}) (statement_id={{statement_id}}){% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        <li>
+            Result: {{statement}} => {{result}}
+        </li>
+        <li>
+            <form action="/statementopen", method="post">
+                <input type="hidden" name="session_id" value="{{session_id}}">
+                <button type="submit">Start a new Spark statement</button>
+            </form>
+        </li>
+        <li>
+            <a href="{{ url_for('close_session') }}">Close session</a>
+        </li>
+    </ul>
+{% endblock %}
