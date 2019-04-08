@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Session operations ({{session_id}}){% endblock %}</h1>
+  <h1>{% block title %}Session operations{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
+Session n° {{session_id}}
     <ul>
         <li>
             Statement:
-            <form action="/statementopen" method="post">
+            <form action="/open_statement" method="post">
                 <input type="text" name="statement" value="">
                 <input type="hidden" name="session_id" value="{{session_id}}">
                 <button type="submit">Start a Spark statement</button>
