@@ -1,10 +1,11 @@
-function availablepost(session_id, statement_id, statement) {
+function availablepost(session_id, statement_id, statement, result) {
     method = "post"; // Set method to post by default if not specified.
 
     var fields = {
         "session_id": session_id,
         "statement_id": statement_id,
-        "statement": statement
+        "statement": statement,
+        "result": result
         };
 
     var form = document.createElement("form");
@@ -73,7 +74,7 @@ $(document).ready(function(){
         //console.log("from socket.on Statement id" + msg.statement_id);
 
         //('#log').html('<br>== Available === <br>');
-        availablepost(msg.session_id, msg.statement_id, msg.statement);
+        availablepost(msg.session_id, msg.statement_id, msg.statement, msg.result);
     });
 
 });
