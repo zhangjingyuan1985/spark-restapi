@@ -87,7 +87,6 @@ class SessionThread(Thread):
 
 
 gateway_name = "gateway_spark"
-# host = "134.158.75.109"
 host = "vm-75109.lal.in2p3.fr"
 port = 8443
 gateway = "gateway/knox_spark_adonis"
@@ -97,16 +96,13 @@ login, username, password = secrets.authenticators(gateway_name)
 
 url = 'https://{}:{}/{}/livy/v1/'.format(host, port, gateway)
 
-## Auth = Union[requests.auth.AuthBase, Tuple[str, str]]
 auth = (login, password)
 
-LIVY_URL = url
-
 print("direct execution of a statement ")
-with LivySession(LIVY_URL, auth=auth, verify=False) as session:
+with LivySession(url, auth=auth, verify_ssl=False) as session:
     session.run("2+3")
 
-client = LivyClient(LIVY_URL, auth=auth)
+client = LivyClient(url, auth=auth)
 
 print("List all sessions")
 sessions = client.list_sessions()
