@@ -1,0 +1,28 @@
+
+.box { width: 100px; float: left; margin: 0 10px 10px 0; }
+
+
+.red { color: red; background-color: #f99; border: 3px solid black;}
+.blue { color: blue; background-color: #99F; border: 3px solid black;}
+.green { color: green; background-color: #9f9; border: 3px solid black;}
+.orange { background-color : orange; }
+.violet { background-color : violet; border: 3px solid black;}
+
+.box {
+  background: red;
+  width: 100px;
+  height: 100px;
+  margin: 20px;
+  color: white;
+}
+#un {
+  position: fixed;
+  top: 40px;
+  left: 10px;
+}
+.outer {
+  width: 500px;
+  height: 300px;
+  overflow: scroll;
+  padding-left: 200px;
+}

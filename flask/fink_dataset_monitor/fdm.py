@@ -2,18 +2,21 @@
 # -*- coding:utf-8 -*-
 
 from pylivy.session import *
-from pylivy.client import *
+from pylivy import client
 from flask_socketio import SocketIO, emit
 from flask import Flask, request, render_template
 from time import sleep
 from threading import Thread
 import random
 
+from requests.auth import HTTPBasicAuth
+
 __author__ = 'Chris Arnault'
 
-LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
+# LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
+LIVY_URL = "https://134.158.75.109:8443/gateway/knox_spark/"
 
-livy_client = LivyClient(LIVY_URL)
+livy_client = client.LivyClient(url=LIVY_URL)
 simulation = False
 
 app = Flask(__name__)
@@ -97,7 +100,10 @@ class SessionThread(Thread):
         global session_threads
 
         print("Create a Livy session ")
-        s = livy_client.create_session(SessionKind.PYSPARK)
+
+        auth = HTTPBasicAuth('christian.arnault', '@@@DTsa57')
+
+        s = livy_client.create_session(SessionKind.PYSPARK, proxy_user=auth)
         print("<br> session {} <br>".format(s.session_id))
         self.session_id = s.session_id
 

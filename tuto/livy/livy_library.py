@@ -17,10 +17,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys, os
 
+sys.path.append("d:/workspace/pylivy/")
 
-from pylivy.session import *
-from pylivy.client import *
+from livy.session import *
+from livy.client import *
+import netrc
+import time
+from threading import Thread
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+os.environ['HOME'] = 'c:/arnault'
 
 
 """
@@ -30,13 +40,73 @@ https://pylivy.readthedocs.io/en/latest/index.web
 
 """
 
-LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
+
+class SessionThread(Thread):
+    def __init__(self):
+        self.session_id = None
+        super(SessionThread, self).__init__()
+
+    def run(self):
+        """
+        Launch a session
+        Send a asynchronous event when core action is completed
+        """
+        print("Create a session ")
+        s = client.create_session(SessionKind.PYSPARK)
+        print("=> session ", s.session_id)
+
+        print("... wait until idle ...")
+        while True:
+            s = client.get_session(s.session_id)
+            if s.state == SessionState.IDLE:
+                break
+
+        for i in range(10):
+            code = "3 + 7 + {}".format(i)
+
+            print("{}> Execute spark statement {}".format(s.session_id, code))
+
+            st = client.create_statement(s.session_id, code)
+
+            print("{}> ... wait until available ...".format(s.session_id))
+            result = ""
+            while True:
+                st = client.get_statement(s.session_id, st.statement_id)
+                if st.state == StatementState.AVAILABLE:
+                    result = st.output.text
+                    print("{}> result = {}".format(s.session_id, result))
+                    break
+
+            time.sleep(1)
+
+        print("Delete session ", s.session_id)
+        client.delete_session(s.session_id)
+
+
+
+
+
+gateway_name = "gateway_spark"
+# host = "134.158.75.109"
+host = "vm-75109.lal.in2p3.fr"
+port = 8443
+gateway = "gateway/knox_spark_adonis"
+
+secrets = netrc.netrc()
+login, username, password = secrets.authenticators(gateway_name)
+
+url = 'https://{}:{}/{}/livy/v1/'.format(host, port, gateway)
+
+## Auth = Union[requests.auth.AuthBase, Tuple[str, str]]
+auth = (login, password)
+
+LIVY_URL = url
 
 print("direct execution of a statement ")
-with LivySession(LIVY_URL) as session:
+with LivySession(LIVY_URL, auth=auth, verify=False) as session:
     session.run("2+3")
 
-client = LivyClient(LIVY_URL)
+client = LivyClient(LIVY_URL, auth=auth)
 
 print("List all sessions")
 sessions = client.list_sessions()
@@ -45,32 +115,15 @@ for session in sessions:
     for s in client.list_statements(session.session_id):
         print(" statement ", s)
 
-print("Create a session ")
-s = client.create_session(SessionKind.PYSPARK)
-print("=> session ", s.session_id)
+threads = []
 
-print("... wait until idle ...")
-while True:
-    s = client.get_session(s.session_id)
-    if s.state == SessionState.IDLE:
-        break
+for ses in range(1):
+    st = SessionThread()
+    threads.append(st)
+    st.start()
 
-code = "3 + 7"
 
-print("Execute spark statement ", code)
+for st in threads:
+    st.join()
 
-st = client.create_statement(s.session_id, code)
-
-print("... wait until available ...")
-result = ""
-while True:
-    st = client.get_statement(s.session_id, st.statement_id)
-    if st.state == StatementState.AVAILABLE:
-        result = st.output.text
-        break
-
-print("result = ", result)
-
-print("Delete session ", s.session_id)
-client.delete_session(s.session_id)
-
+print('all done')
