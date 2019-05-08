@@ -102,7 +102,7 @@ print("direct execution of a statement ")
 with LivySession(url, auth=auth, verify_ssl=False) as session:
     session.run("2+3")
 
-client = LivyClient(url, auth=auth)
+client = LivyClient(url, auth=auth, verify_ssl=False)
 
 print("List all sessions")
 sessions = client.list_sessions()
