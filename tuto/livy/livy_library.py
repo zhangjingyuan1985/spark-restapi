@@ -20,17 +20,19 @@
 import sys, os
 
 sys.path.append("d:/workspace/pylivy/")
+sys.path.append("../../hbase")
 
 from livy.session import *
 from livy.client import *
 import netrc
 import time
 from threading import Thread
+from hbase_lib import *
+
+from gateway import *
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-os.environ['HOME'] = 'c:/arnault'
 
 
 """
@@ -42,18 +44,22 @@ https://pylivy.readthedocs.io/en/latest/index.web
 
 
 class SessionThread(Thread):
-    def __init__(self):
-        self.session_id = None
+    def __init__(self, hbase, name):
         super(SessionThread, self).__init__()
+        self.name = name
+        self.hbase = hbase
+        self.session_id = None
 
     def run(self):
         """
         Launch a session
         Send a asynchronous event when core action is completed
         """
-        print("Create a session ")
+        print("Create a session for {}".format(self.name))
         s = client.create_session(SessionKind.PYSPARK)
         print("=> session ", s.session_id)
+
+
 
         print("... wait until idle ...")
         while True:
@@ -64,17 +70,17 @@ class SessionThread(Thread):
         for i in range(10):
             code = "3 + 7 + {}".format(i)
 
-            print("{}> Execute spark statement {}".format(s.session_id, code))
+            print("{}> Execute spark statement {}".format(self.name, code))
 
             st = client.create_statement(s.session_id, code)
 
-            print("{}> ... wait until available ...".format(s.session_id))
+            print("{}> ... wait until available ...".format(self.name))
             result = ""
             while True:
                 st = client.get_statement(s.session_id, st.statement_id)
                 if st.state == StatementState.AVAILABLE:
                     result = st.output.text
-                    print("{}> result = {}".format(s.session_id, result))
+                    print("{}> result = {}".format(self.name, result))
                     break
 
             time.sleep(1)
@@ -83,20 +89,11 @@ class SessionThread(Thread):
         client.delete_session(s.session_id)
 
 
+url, auth = gateway_url('livy/v1')
 
+hbase = HBase()
 
-
-gateway_name = "gateway_spark"
-host = "vm-75109.lal.in2p3.fr"
-port = 8443
-gateway = "gateway/knox_spark_adonis"
-
-secrets = netrc.netrc()
-login, username, password = secrets.authenticators(gateway_name)
-
-url = 'https://{}:{}/{}/livy/v1/'.format(host, port, gateway)
-
-auth = (login, password)
+hbase = hbase.create_table('users', ['livy'])
 
 print("direct execution of a statement ")
 with LivySession(url, auth=auth, verify_ssl=False) as session:
@@ -108,13 +105,15 @@ print("List all sessions")
 sessions = client.list_sessions()
 for session in sessions:
     print(session.session_id, session.state)
-    for s in client.list_statements(session.session_id):
-        print(" statement ", s)
+    if session.state == SessionState.IDLE:
+        for s in client.list_statements(session.session_id):
+            print(" statement ", s)
 
 threads = []
 
-for ses in range(1):
-    st = SessionThread()
+users = ['John', 'Paul', 'Jack']
+for user in users:
+    st = SessionThread(hbase, user)
     threads.append(st)
     st.start()
 

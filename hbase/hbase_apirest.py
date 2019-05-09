@@ -17,239 +17,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import requests
-import json
-
-import pprint
-import lxml
-from lxml import etree
-import xmltodict
-import json
-import base64
-import requests
-from collections import OrderedDict
-import re
-
-class Cell(object):
-    def __init__(self, name, value=None, timestamp=None):
-        self.name = name
-        self.value = value
-        self.timestamp = timestamp
-
-    def set(self, value=None, timestamp=None):
-        self.value = value
-        self.timestamp = timestamp
-
-    def __str__(self):
-        return "Cell> {} = {} T={}".format(self.name, self.value, self.timestamp)
-
-
-class Row(object):
-    def __init__(self):
-        self.key = ""
-        self.cells = []
-
-    def set_key(self, key):
-        self.key = key
-
-    def add_cell(self, cell):
-        self.cells.append(cell)
-
-    def __str__(self):
-        t = "Row> {}".format(self.key)
-        for c in self.cells:
-            t += "\n  {}".format(c)
-
-        return t
-
-class HBase(object):
-    def __init__(self):
-        self.host = "http://localhost:8080"
-
-    def get_version(self):
-        """
-        """
-
-        headers = { "Accept": "text/xml"}
-
-        r = requests.get(self.host + '/version', headers = headers)
-
-        xpars = xmltodict.parse(r.text)
-        return xpars["Version"]
-
-    def get_namespaces(self):
-        headers = { "Accept": "text/xml"}
-        r = requests.get(self.host + '/namespaces', headers = headers)
-
-        xpars = xmltodict.parse(r.text)
-        return xpars["Namespaces"]
-
-    def get_tables(self):
-        headers = {"Accept": "text/xml"}
-        r = requests.get(self.host + '/', headers=headers)
-
-        xpars = xmltodict.parse(r.text)
-        return xpars['TableList']
-
-    def get_schema(self, table):
-        headers = {"Accept": "text/xml"}
-        r = requests.get(self.host + '/{}/schema'.format(table), headers=headers)
-
-        xpars = xmltodict.parse(r.text)
-        return xpars["TableSchema"]
-
-    def get_regions(self, table):
-        headers = {"Accept": "text/xml"}
-        r = requests.get(self.host + '/{}/regions'.format(table), headers=headers)
-
-        xpars = xmltodict.parse(r.text)
-        return xpars["TableInfo"]
-
-    def create_row(self, row):
-
-        def create_cell(cell):
-            column_name = ""
-            column_value = ""
-            timestamp = ""
-            for e in cell:
-                if e in ["column", "@column"]:
-                    encoded = cell[e].encode('utf-8')
-                    column_name = base64.b64decode(encoded)
-                elif e in ["$", "#text"]:
-                    encoded = cell[e].encode('utf-8')
-                    column_value = base64.b64decode(encoded)
-                elif e in ["timestamp", "@timestamp"]:
-                    timestamp = cell[e]
-                else:
-                    # print(e, cell[e])
-                    pass
-            cell = Cell(column_name, column_value, timestamp)
-            return cell
-
-        rowobj = Row()
-
-        for k in row:
-            if k in ["key", "@key"]:
-                encoded = row[k].encode('utf-8')
-                v = base64.b64decode(encoded)
-                rowobj.set_key(v)
-                # print('row key = {}'.format(v))
-            elif k == "Cell":
-                cells = row[k]
-
-                # print("Type de cells: {}".format(type(cells)))
-
-                if isinstance(cells, list):
-                    for cell in cells:
-                        c = create_cell(cell)
-                        rowobj.add_cell(c)
-                        # print(c)
-                elif isinstance(cells, OrderedDict):
-                    c = create_cell(cells)
-                    rowobj.add_cell(c)
-                    # print(c)
-                else:
-                    print("???")
-            else:
-                print("???", k, row[k])
-
-        return rowobj
-
-    def get_row(self, table, keyrow):
-        headers = {"Content-Type" : "application/json", "Accept" : "application/json"}
-        r = requests.get(self.host + '/{}/{}'.format(table, keyrow), headers=headers)
-
-        print('get row')
-
-        data = r.json()
-
-        for e1 in data:
-            print(e1)
-            rows = data['Row']
-            for row in rows:
-                r = self.create_row(row)
-                print(r)
-
-        # xpars = xmltodict.parse(r.text)
-        return data
-
-    def get_scanner(self, table, max=10):
-        headers = {"Content-Type" : "text/xml", "Accept" : "text/xml"}
-        data = '<Scanner batch="{}"/>'.format(max)
-        r = requests.put(self.host + '/{}/scanner'.format(table), data=data, headers=headers)
-
-        loc = r.headers['Location']
-        m = re.match('.*[/](.*)$', loc)
-        scanner = m[1]
-
-        return scanner
-
-    def delete_scanner(self, table, scanner):
-        headers = {"Accept" : "text/xml"}
-        r = requests.delete(self.host + '/{}/scanner/{}'.format(table, scanner), headers=headers)
-        return r
-
-    def scan(self, table, scanner):
-        headers = {"Accept" : "text/xml"}
-        while True:
-            r = requests.get(self.host + '/{}/scanner/{}'.format(table, scanner), headers=headers)
-            if r.status_code == 204:
-                print("exhausted")
-                break
-
-            xpars = xmltodict.parse(r.text)
-            rows = xpars['CellSet']
-
-            for key in rows:
-                for row in rows[key]:
-                    r = self.create_row(row)
-                    print(r)
-
-            print("continue")
-
-        return r
-
-    def get_rows(self, table):
-        scanner = self.get_scanner(table)
-        self.scan(table, scanner)
-        self.delete_scanner(table, scanner)
+from hbase_lib import *
+import random
 
 def main():
 
     hbase = HBase()
 
     version = hbase.get_version()
-    print('Show version')
+    print('================== Show version')
     for a in version:
         print(a, "=", version[a])
 
-    ns = hbase.get_namespaces()
-    for a in ns:
-        print(a, "=", ns[a])
+    print('================== get_namespaces')
+    namespaces = hbase.get_namespaces()
+    print(', '.join(namespaces))
 
-    ns = hbase.get_tables()
-    for a in ns:
-        print(a, "=", ns[a])
+    print('================== create table')
+    hbase.create_table("A", ['position', 'vitesse'])
+    cols = hbase.get_schema("A")
+    print(', '.join(cols))
 
-    print('-------------')
-    ns = hbase.get_schema("A")
-    schema = ns["ColumnSchema"]
-    for schemaItem in schema:
-        print('=')
-        for a in schemaItem:
-            print(a, "=", schemaItem[a])
+    print('================== get_schema')
+    families = hbase.get_schema("A")
+    print(', '.join(families))
 
-    print('-------------')
+    print('================== get_regions')
     regions = hbase.get_regions("A")
-    for region in regions:
-        print(region)
+    print(', '.join(regions))
 
-    print('-------------')
+    print('================== get_row')
     hbase.get_row("A", "p1")
 
-    print('-------------')
+    print('================== get_rows')
     hbase.get_rows("A")
+
+    print('================== create table')
+    hbase.create_table("B", ['position'])
+    families = hbase.get_schema("B")
+    print(', '.join(families))
+
+    for r in range(5):
+        hbase.add_row('B', 'r{}'.format(r), {'position:x': random.random(),
+                                             'position:y': random.random(),
+                                             'position:z': random.random()})
+
+    hbase.get_rows("B")
+
+    print('================== get_tables')
+    tables = hbase.get_tables()
+    print(', '.join(tables))
+
+    print('================== delete table')
+    hbase.delete_table("A")
+    hbase.delete_table("B")
+
+    print('================== get_tables')
+    tables = hbase.get_tables()
+    print(', '.join(tables))
 
 
 if __name__ == "__main__":
