@@ -20,7 +20,7 @@
 import sys, os
 
 sys.path.append("d:/workspace/pylivy/")
-sys.path.append("../../hbase/")
+sys.path.append("../../lib/")
 
 from livy.session import *
 from livy.client import *

@@ -17,11 +17,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+sys.path.append('../lib')
+
 from hbase_lib import *
 import random
 
 def main():
-
     hbase = HBase()
 
     version = hbase.get_version()

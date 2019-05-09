@@ -20,20 +20,15 @@
 import sys, os
 
 sys.path.append("d:/workspace/pylivy/")
-sys.path.append("../../hbase")
+sys.path.append("../../lib")
 
 from livy.session import *
 from livy.client import *
-import netrc
 import time
 from threading import Thread
+
 from hbase_lib import *
-
 from gateway import *
-
-import urllib3
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 
 """
 Demo of using the pylivy library
