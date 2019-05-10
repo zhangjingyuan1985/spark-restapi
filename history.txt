@@ -26,6 +26,7 @@ http://localhost:16010
 APIREST
 
 https://www.cloudera.com/documentation/enterprise/5-9-x/topics/admin_hbase_rest_api.html
+https://knox.apache.org/books/knox-1-2-0/user-guide.html#HBase
 
 C:\Arnault> curl -H "Accept: text/xml" http://localhost:8080/version
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>

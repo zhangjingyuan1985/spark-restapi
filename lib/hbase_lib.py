@@ -104,10 +104,14 @@ class HBase(object):
         headers = {"Accept": "text/xml"}
         r = requests.get(self.host + '/{}/schema'.format(table), headers=headers, auth = self.auth, verify = False)
 
+        families = []
+
+        if r.status_code == 404:
+            return families
+
         xpars = xmltodict.parse(r.text)
         schema = xpars["TableSchema"]["ColumnSchema"]
 
-        families = []
         if type(schema) == list:
             for schemaItem in schema:
                 families.append(table + '.' + schemaItem['@name'])
@@ -123,12 +127,12 @@ class HBase(object):
         xpars = xmltodict.parse(r.text)
         return xpars["TableInfo"]
 
-    def create_table(self, table, columns):
+    def create_table(self, table, families):
         headers = {"Accept": "text/xml",
                    "Content-Type": "text/xml"}
         data = '<?xml version="1.0" encoding="UTF-8"?> <TableSchema name="{}">'.format(table)
-        for col in columns:
-            data += '<ColumnSchema name="{}" />'.format(col)
+        for family in families:
+            data += '<ColumnSchema name="{}" />'.format(family)
         data += '</TableSchema>'
 
         r = requests.post(self.host + '/{}/schema'.format(table), headers=headers, data=data, auth = self.auth, verify = False)
@@ -191,26 +195,27 @@ class HBase(object):
         return rowobj
 
     def get_row(self, table, keyrow):
-
         headers = {"Content-Type" : "application/json", "Accept" : "application/json"}
+
+        result = []
+
         r = requests.get(self.host + '/{}/{}'.format(table, keyrow), headers=headers, auth = self.auth, verify = False)
 
         if r.status_code == 404:
             return None
 
-        print('get row')
+        # print('get row')
 
         data = r.json()
 
         for e1 in data:
-            print(e1)
+            # print(e1)
             rows = data['Row']
             for row in rows:
-                r = self.create_rowobj(row)
-                print(r)
+                result.append(self.create_rowobj(row))
 
         # xpars = xmltodict.parse(r.text)
-        return data
+        return result
 
     def get_scanner(self, table, max=10):
         headers = {"Content-Type" : "text/xml", "Accept" : "text/xml"}
@@ -261,15 +266,11 @@ curl -vi -X PUT \
         data += '</Row>'
         data += '</CellSet>'
 
-
-        """
-        d = { "Row": [ { "key": encode(rowkey), "Cell": cells } ] }
-
-        data = json.dumps(d)
-        """
-
-        #### r = requests.post(self.host + '/{}/{}'.format(table, rowkey), headers=headers, data=data, auth = self.auth, verify = False)
-        r = requests.put(self.host + '/{}/{}'.format(table, rowkey), headers=headers, data=data, auth = self.auth, verify = False)
+        r = requests.put(self.host + '/{}/{}'.format(table, rowkey),
+                         headers=headers,
+                         data=data,
+                         auth = self.auth,
+                         verify = False)
 
         return r
 
@@ -281,28 +282,47 @@ curl -vi -X PUT \
 
     def scan(self, table, scanner):
         headers = {"Accept" : "text/xml"}
+
+        result = []
+
         while True:
             r = requests.get(self.host + '/{}/scanner/{}'.format(table, scanner), headers=headers, auth = self.auth, verify = False)
             if r.status_code == 204:
-                print("exhausted")
                 break
 
             xpars = xmltodict.parse(r.text)
             rows = xpars['CellSet']
 
             for key in rows:
-                for row in rows[key]:
-                    r = self.create_rowobj(row)
-                    print(r)
+                if type(rows[key]) == list:
+                    for row in rows[key]:
+                        result.append(self.create_rowobj(row))
+                else:
+                    row = rows[key]
+                    result.append(self.create_rowobj(row))
 
-            print("continue")
-
-        return r
+        return result
 
     def get_rows(self, table):
         scanner = self.get_scanner(table)
-        self.scan(table, scanner)
+        result = self.scan(table, scanner)
         self.delete_scanner(table, scanner)
+        return result
+
+    def get_unique_id(self, table):
+        families = self.get_schema(table)
+        if len(families) == 0:
+            r = self.create_table(table, ['unique'])
+        row = self.get_row(table, 'unique')
+        unique = 1
+        if not row is None:
+            cell = row[0].cells[0]
+            unique = int(cell.value) + 1
+
+        self.add_row(table, 'unique', {'unique:unique': unique})
+
+        return unique
+
 
 def main():
     pass

@@ -52,19 +52,39 @@ def main():
     hbase.get_row("A", "p1")
 
     print('================== get_rows')
-    hbase.get_rows("A")
+    rows = hbase.get_rows("A")
+    print(', '.join(rows))
 
     print('================== create table')
     hbase.create_table("B", ['position'])
     families = hbase.get_schema("B")
     print(', '.join(families))
 
-    for r in range(5):
+    for r in range(1, 5):
         hbase.add_row('B', 'r{}'.format(r), {'position:x': random.random(),
                                              'position:y': random.random(),
                                              'position:z': random.random()})
 
-    hbase.get_rows("B")
+    rows = hbase.get_rows("B")
+    for row in rows:
+        print(str(row))
+
+    print('================== create table')
+    hbase.create_table("C", ['unique'])
+    families = hbase.get_schema("C")
+    print(', '.join(families))
+
+    for i in range(3):
+        print('update a unique ID')
+        hbase.add_row('C', 'livy', {'unique:livy': random.random()})
+        rows = hbase.get_rows("C")
+        for row in rows:
+            print(str(row))
+            
+    print('================== get_unique_id')
+    for i in range(3):
+        id = hbase.get_unique_id("D")
+        print('id = ', id)
 
     print('================== get_tables')
     tables = hbase.get_tables()
@@ -73,6 +93,8 @@ def main():
     print('================== delete table')
     hbase.delete_table("A")
     hbase.delete_table("B")
+    hbase.delete_table("C")
+    hbase.delete_table("D")
 
     print('================== get_tables')
     tables = hbase.get_tables()

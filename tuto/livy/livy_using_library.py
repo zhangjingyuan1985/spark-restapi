@@ -54,8 +54,6 @@ class SessionThread(Thread):
         s = client.create_session(SessionKind.PYSPARK)
         print("=> session ", s.session_id)
 
-
-
         print("... wait until idle ...")
         while True:
             s = client.get_session(s.session_id)
@@ -83,37 +81,39 @@ class SessionThread(Thread):
         print("Delete session ", s.session_id)
         client.delete_session(s.session_id)
 
+def main():
+    url, auth = gateway_url('livy/v1')
 
-url, auth = gateway_url('livy/v1')
+    hbase = HBase()
 
-hbase = HBase()
+    hbase = hbase.create_table('livy_users', ['sessions'])
 
-hbase = hbase.create_table('users', ['livy'])
+    print("direct execution of a statement ")
+    with LivySession(url, auth=auth, verify_ssl=False) as session:
+        session.run("2+3")
 
-print("direct execution of a statement ")
-with LivySession(url, auth=auth, verify_ssl=False) as session:
-    session.run("2+3")
+    client = LivyClient(url, auth=auth, verify_ssl=False)
 
-client = LivyClient(url, auth=auth, verify_ssl=False)
+    print("List all sessions")
+    sessions = client.list_sessions()
+    for session in sessions:
+        print(session.session_id, session.state)
+        if session.state == SessionState.IDLE:
+            for s in client.list_statements(session.session_id):
+                print(" statement ", s)
 
-print("List all sessions")
-sessions = client.list_sessions()
-for session in sessions:
-    print(session.session_id, session.state)
-    if session.state == SessionState.IDLE:
-        for s in client.list_statements(session.session_id):
-            print(" statement ", s)
+    threads = []
 
-threads = []
+    users = ['John', 'Paul', 'Jack']
+    for user in users:
+        st = SessionThread(hbase, user)
+        threads.append(st)
+        st.start()
 
-users = ['John', 'Paul', 'Jack']
-for user in users:
-    st = SessionThread(hbase, user)
-    threads.append(st)
-    st.start()
+    for st in threads:
+        st.join()
 
+    print('all done')
 
-for st in threads:
-    st.join()
-
-print('all done')
+if __name__ == "__main__":
+    main()
