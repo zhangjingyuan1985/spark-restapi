@@ -17,12 +17,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys, os
 
+sys.path.append("d:/workspace/pylivy/")
+sys.path.append("../../lib/")
 
-from pylivy.session import *
-from pylivy.client import *
-import sys
-
+from livy.session import *
+from livy.client import *
+from gateway import *
 
 """
 Demo of using the pylivy library
@@ -31,16 +33,18 @@ https://pylivy.readthedocs.io/en/latest/index.web
 
 """
 
-LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
+## LIVY_URL = "http://vm-75222.lal.in2p3.fr:21111"
 
-client = LivyClient(LIVY_URL)
+url, auth = gateway_url ("livy/v1")
+client = LivyClient(url, auth=auth, verify_ssl=False)
 
 print("List all sessions")
 sessions = client.list_sessions()
 for session in sessions:
     print(session.session_id, session.state)
-    for s in client.list_statements(session.session_id):
-        print(" statement ", s)
+    if session.state == SessionState.IDLE:
+        for s in client.list_statements(session.session_id):
+            print(" statement ", s)
 
 
 

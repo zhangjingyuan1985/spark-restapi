@@ -16,7 +16,10 @@ Session n° {{session_id}}
             </form>
         </li>
         <li>
-            <a href="{{ url_for('close_session') }}">Close session</a>
+            <form action="/close" method="post">
+                <input type="hidden" name="session_id" value="{{session_id}}">
+                <button type="submit">Close session</button>
+            </form>
         </li>
     </ul>
 {% endblock %}

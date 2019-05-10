@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# coding: utf-8
+
 # Copyright 2018 AstroLab Software
 # Author: Chris Arnault
 #
@@ -15,35 +17,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Minimal HTML server
+import hbase
 
-run in the <host> machine as
+def main():
+    print("Happybase test")
+    host = "localhost:8080"
 
-> python server.py
+    hbase.ConnectionPool()
 
-Then, call in a web navigator the URL
+    c = hbase.ConnectionPool(host)
 
-http://<host>:24700/indextry.py
-
-The indextry.py script has to be present on the <host> machine
-
-https://python-django.dev/page-python-serveur-web-creer-rapidement
-"""
-
-import http.server
- 
-PORT = 24700
-server_address = ("", PORT)
-
-server = http.server.HTTPServer
-handler = http.server.CGIHTTPRequestHandler
-
-handler.cgi_directories = ["/"]
-
-print("Serveur actif sur le port :", PORT)
-
-httpd = server(server_address, handler)
-httpd.serve_forever()
-
-
+if __name__ == "__main__":
+    main()

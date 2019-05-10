@@ -1,0 +1,52 @@
+cd flask
+python -m venv venv
+pip install flask-migrate
+venv\Scripts\activate
+flask init-db
+set FLASK_APP=fink_dataset_monitor
+set FLASK_ENV=development
+
+https://openclassrooms.com/fr/courses/1654786-creez-vos-applications-web-avec-flask/1655132-requetes-et-reponses
+
+https://www.shanelynn.ie/asynchronous-updates-to-a-webpage-with-flask-and-socket-io/
+
+https://flask-socketio.readthedocs.io/en/latest/
+
+HBase
+-----
+
+set PORTS=-p 2181:2181 -p 8080:8080 -p 8085:8085 -p 9090:9090 -p 9095:9095 -p 16000:16000 -p 16010:16010 -p 16201:16201 -p 16301:16301
+
+docker run --rm -ti -v d:\hbase:/hbase-data %PORTS% harisekhon/hbase
+
+UI
+
+http://localhost:16010
+
+APIREST
+
+https://www.cloudera.com/documentation/enterprise/5-9-x/topics/admin_hbase_rest_api.html
+https://knox.apache.org/books/knox-1-2-0/user-guide.html#HBase
+
+C:\Arnault> curl -H "Accept: text/xml" http://localhost:8080/version
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <Version
+    JVM="Oracle Corporation 1.8.0_181-25.181-b13"
+    Jersey=""
+    OS="Linux 4.9.13-moby amd64"
+    REST="0.0.3"
+    Server="jetty/9.3.19.v20170502"/>
+
+C:\Arnault> curl -H "Accept: text/xml" http://localhost:8080/
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <TableList><table name="A"/></TableList>
+
+===============================
+In using Happybase
+
+Fix
+
+C:\Install\Anaconda3\Lib\site-packages\thriftpy\parser\parser.py line 488
+
+if url_scheme == '':   ==>   if url_scheme in ('c', ''):
+

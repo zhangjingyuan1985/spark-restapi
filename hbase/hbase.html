@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- <link rel="stylesheet" type="text/css" href="css/style.css"> -->
+  <style type="text/css">
+    s { display: none }
+    p { display: block }
+    p.note { color: red }
+    .red {background-color: #f88}
+    .blue {background-color: #88f}
+    .green {background-color: #8f8}
+    .orange {background-color: orange}
+    .grey {background-color: #ddd}
+
+    .box {
+      display: inline-block;
+      width: 2000px;
+      left:0px;
+      color: blue;
+    }
+
+    .un {display: inline-block; position: relative; width:30%; height:50%; top:0; overflow: scroll;}
+    .deux {display: inline-block; position: relative; top:0; overflow: scroll;}
+
+    .split {
+      height: 100%;
+      width: 100%;
+      position: fixed;
+      padding-top: 0px;
+    }
+
+    /* Control the left side */
+    .left {
+      display: inline-block;
+      left: 0;
+      width:30%;
+      height:100%;
+      overflow: scroll;
+    }
+
+    /* Control the right side */
+    .right {
+      display: inline-block;
+      right: 0;
+      width:69%;
+      height:100%;
+      overflow: scroll;
+    }
+
+    .middle {
+      display: inline-block;
+      left: 0;
+      width:100%;
+      height:90%;
+      overflow: scroll;
+    }
+
+    .border {
+      border: 1px solid #aaa;
+    }
+
+    .tdleft {
+      width:30%;
+      border: 1px solid #aaa;
+    }
+
+    .tdright {
+      width:70%;
+      border: 1px solid #aaa;
+    }
+
+  </style>
+</head>
+
+<!-- Main start -->
+<body>
+
+<div class="box orange">
+  <p>Some text... </p>
+  <p class="note">A note... </p>
+  <div class="split green">
+      <div class="middle grey">
+        <table cellspacing="0" cellpadding="4">
+            <thead>
+                <tr>
+                    <th colspan="2">The table header</th>
+                </tr>
+            </thead>
+            <tbody>
+                    <!-- start contents -->
+                <tr>
+                    <td class="tdleft">The table body</td>
+                    <td class="tdright">with two columns</td>
+                </tr>
+                    <!-- end contents -->
+            </tbody>
+        </table>
+      </div>
+  </div>
+</div>
+
+
+</body>
+</html>

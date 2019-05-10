@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# coding: utf-8
+
 # Copyright 2018 AstroLab Software
 # Author: Chris Arnault
 #
@@ -15,35 +17,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Minimal HTML server
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-run in the <host> machine as
+import netrc
+import os
 
-> python server.py
+os.environ['HOME'] = 'c:/arnault'
 
-Then, call in a web navigator the URL
+def gateway_url(prefix):
+    gateway_name = "gateway_spark"
+    host = "vm-75109.lal.in2p3.fr"
+    port = 8443
+    gateway = "gateway/knox_spark_adonis"
 
-http://<host>:24700/indextry.py
+    secrets = netrc.netrc()
+    login, username, password = secrets.authenticators(gateway_name)
 
-The indextry.py script has to be present on the <host> machine
-
-https://python-django.dev/page-python-serveur-web-creer-rapidement
-"""
-
-import http.server
- 
-PORT = 24700
-server_address = ("", PORT)
-
-server = http.server.HTTPServer
-handler = http.server.CGIHTTPRequestHandler
-
-handler.cgi_directories = ["/"]
-
-print("Serveur actif sur le port :", PORT)
-
-httpd = server(server_address, handler)
-httpd.serve_forever()
+    return 'https://{}:{}/{}/{}'.format(host, port, gateway, prefix), (login, password)
 
 
+def main():
+    pass
+
+
+if __name__ == "__main__":
+    main()

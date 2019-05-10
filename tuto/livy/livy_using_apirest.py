@@ -17,14 +17,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
+sys.path.append('../../lib')
 
 import requests
 import json
-import pprint
+from gateway import *
 
 class Livy:
     def __init__(self):
-        self.host = "http://vm-75222.lal.in2p3.fr:21111"
+        self.host, self.auth = gateway_url('livy/v1')
 
     def get_sessions(self):
         """
@@ -35,7 +37,7 @@ class Livy:
         """
 
         ids=dict()
-        r = requests.get(self.host + '/sessions')
+        r = requests.get(self.host + '/sessions', auth = self.auth, verify = False)
         answer = r.json()
         for session in answer['sessions']:
             ids[int(session['id'])] = session['state']
@@ -50,7 +52,8 @@ class Livy:
         """
         headers = {'Content-Type': 'application/json'}
         data = {'kind': 'pyspark'}
-        r = requests.post(self.host + '/sessions', data=json.dumps(data), headers=headers)
+        r = requests.post(self.host + '/sessions', data=json.dumps(data), headers=headers,
+                          auth = self.auth, verify = False)
         answer = r.json()
         # print("JSON:", answer)
 
@@ -58,7 +61,7 @@ class Livy:
 
         while (True):
             session_url = self.host + r.headers['location']
-            r2 = requests.get(session_url, headers=headers)
+            r2 = requests.get(session_url, headers=headers, auth = self.auth, verify = False)
             answer = r2.json()
 
             # print(answer)
@@ -83,7 +86,7 @@ class Livy:
         data = {'code': statement}
         request = self.host + "/sessions/{}/statements".format(str(id))
 
-        r = requests.post(request, data=json.dumps(data), headers=headers)
+        r = requests.post(request, data=json.dumps(data), headers=headers, auth = self.auth, verify = False)
 
         answer = r.json()
 
@@ -93,7 +96,7 @@ class Livy:
 
         while (True):
             session_url = self.host + r.headers['location']
-            r2 = requests.get(session_url, headers=headers)
+            r2 = requests.get(session_url, headers=headers, auth = self.auth, verify = False)
             answer = r2.json()
 
             # print(answer)
@@ -112,7 +115,7 @@ class Livy:
         Delete an existing Livy session
         :param id:
         """
-        r = requests.delete(self.host + '/sessions/{}'.format(id))
+        r = requests.delete(self.host + '/sessions/{}'.format(id), auth = self.auth, verify = False)
 
 def main():
 
