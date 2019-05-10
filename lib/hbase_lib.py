@@ -107,7 +107,7 @@ class HBase(object):
         families = []
 
         if r.status_code == 404:
-            return families
+            return None
 
         xpars = xmltodict.parse(r.text)
         schema = xpars["TableSchema"]["ColumnSchema"]
@@ -127,7 +127,21 @@ class HBase(object):
         xpars = xmltodict.parse(r.text)
         return xpars["TableInfo"]
 
-    def create_table(self, table, families):
+    def create_table(self, table, families, recreate = False):
+        """
+        :param table:
+        :param families:
+        :param recreate: If True, forget previous definition of this table
+                         If False verify if the table existed and in this case keep it unchanged
+        :return:
+        """
+        if recreate:
+            self.delete_table(table)
+        else:
+            f = self.get_schema(table)
+            if not f is None:
+                return f
+
         headers = {"Accept": "text/xml",
                    "Content-Type": "text/xml"}
         data = '<?xml version="1.0" encoding="UTF-8"?> <TableSchema name="{}">'.format(table)
@@ -136,7 +150,10 @@ class HBase(object):
         data += '</TableSchema>'
 
         r = requests.post(self.host + '/{}/schema'.format(table), headers=headers, data=data, auth = self.auth, verify = False)
-        return r
+        print("create_table", r.status_code)
+
+        families = self.get_schema(table)
+        return families
 
     def delete_table(self, table):
         headers = {"Accept": "text/xml"}
@@ -311,8 +328,11 @@ curl -vi -X PUT \
 
     def get_unique_id(self, table):
         families = self.get_schema(table)
-        if len(families) == 0:
+        if families is None:
             r = self.create_table(table, ['unique'])
+            if r is None:
+                return None
+
         row = self.get_row(table, 'unique')
         unique = 1
         if not row is None:

@@ -36,9 +36,8 @@ def main():
     print(', '.join(namespaces))
 
     print('================== create table')
-    hbase.create_table("A", ['position', 'vitesse'])
-    cols = hbase.get_schema("A")
-    print(', '.join(cols))
+    families = hbase.create_table("A", ['position', 'vitesse'], recreate=True)
+    print(', '.join(families))
 
     print('================== get_schema')
     families = hbase.get_schema("A")
@@ -53,11 +52,11 @@ def main():
 
     print('================== get_rows')
     rows = hbase.get_rows("A")
-    print(', '.join(rows))
+    for row in rows:
+        print(rows)
 
     print('================== create table')
-    hbase.create_table("B", ['position'])
-    families = hbase.get_schema("B")
+    families = hbase.create_table("B", ['position'], recreate=True)
     print(', '.join(families))
 
     for r in range(1, 5):
@@ -69,21 +68,9 @@ def main():
     for row in rows:
         print(str(row))
 
-    print('================== create table')
-    hbase.create_table("C", ['unique'])
-    families = hbase.get_schema("C")
-    print(', '.join(families))
-
-    for i in range(3):
-        print('update a unique ID')
-        hbase.add_row('C', 'livy', {'unique:livy': random.random()})
-        rows = hbase.get_rows("C")
-        for row in rows:
-            print(str(row))
-            
     print('================== get_unique_id')
     for i in range(3):
-        id = hbase.get_unique_id("D")
+        id = hbase.get_unique_id("C")
         print('id = ', id)
 
     print('================== get_tables')
@@ -94,7 +81,6 @@ def main():
     hbase.delete_table("A")
     hbase.delete_table("B")
     hbase.delete_table("C")
-    hbase.delete_table("D")
 
     print('================== get_tables')
     tables = hbase.get_tables()
