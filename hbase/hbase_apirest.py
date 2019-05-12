@@ -26,6 +26,7 @@ import random
 def main():
     hbase = HBase()
 
+    """
     version = hbase.get_version()
     print('================== Show version')
     for a in version:
@@ -60,22 +61,46 @@ def main():
     print(', '.join(families))
 
     for r in range(1, 5):
-        hbase.add_row('B', 'r{}'.format(r), {'position:x': random.random(),
-                                             'position:y': random.random(),
-                                             'position:z': random.random()})
+        hbase.add_row('B', 'r{}'.format(r), {'position:x': r,
+                                             'position:y': r,
+                                             'position:z': r})
 
     rows = hbase.get_rows("B")
     for row in rows:
         print(str(row))
 
+    
     print('================== get_unique_id')
     for i in range(3):
-        id = hbase.get_unique_id("C")
+        id = hbase.get_unique_id("C", "test")
         print('id = ', id)
+
+    """
+
+
+    print('================== filter')
+
+    f2 = column_prefix_filter("x")
+    f1 = value_filter("1")
+    filter = scanner_filter(list_filter([f1, f2]))
+
+    rows = hbase.filter('B', filter)
+    for row in rows:
+        print(str(row))
+
+    f2 = column_prefix_filter("unique")
+    f1 = value_filter("1")
+    filter = scanner_filter(list_filter([f1, f2]))
+
+    rows = hbase.filter('B', filter)
+    for row in rows:
+        print(str(row))
 
     print('================== get_tables')
     tables = hbase.get_tables()
     print(', '.join(tables))
+
+    exit()
 
     print('================== delete table')
     hbase.delete_table("A")

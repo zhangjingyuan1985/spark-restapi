@@ -24,9 +24,11 @@ import requests
 from collections import OrderedDict
 import re
 from gateway import *
+from filter_lib import *
 
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 class Cell(object):
     def __init__(self, name, value=None, timestamp=None):
@@ -150,9 +152,11 @@ class HBase(object):
         data += '</TableSchema>'
 
         r = requests.post(self.host + '/{}/schema'.format(table), headers=headers, data=data, auth = self.auth, verify = False)
-        print("create_table", r.status_code)
+        if r.status_code > 400:
+            return None
 
         families = self.get_schema(table)
+
         return families
 
     def delete_table(self, table):
@@ -260,9 +264,6 @@ curl -vi -X PUT \
         as input, a row is a dict of {key, value}
         """
 
-        def encode(value):
-            return base64.b64encode(str(value).encode('utf-8')).decode('utf-8')
-
         """
         cells = []
         for key in row:
@@ -326,7 +327,7 @@ curl -vi -X PUT \
         self.delete_scanner(table, scanner)
         return result
 
-    def get_unique_id(self, table):
+    def get_unique_id(self, table, key):
         families = self.get_schema(table)
         if families is None:
             r = self.create_table(table, ['unique'])
@@ -341,7 +342,52 @@ curl -vi -X PUT \
 
         self.add_row(table, 'unique', {'unique:unique': unique})
 
-        return unique
+        return '{}{}'.format(key, unique)
+
+    def query_int_cell(self, table, cell, value):
+        headers = {"Accept" : "text/xml"}
+
+        r = requests.get(self.host + '/{}/*/{}'.format(table, cell), headers=headers, auth = self.auth, verify = False)
+        xpars = xmltodict.parse(r.text)
+        rows = xpars['CellSet']
+
+        values = {}
+
+        for key in rows:
+            if type(rows[key]) == list:
+                for row in rows[key]:
+                    r = self.create_rowobj(row)
+                    for cell in r.cells:
+                        if int(cell.value) == value:
+                            values[r.key] = int(cell.value)
+            else:
+                row = rows[key]
+                r = self.create_rowobj(row)
+                for cell in r.cells:
+                    if int(cell.value) == value:
+                        values[r.key] = int(cell.value)
+
+        return values
+
+    def filter(self, table, filter):
+        headers = {"Accept": "text/xml",
+                   "Content-Type": "text/xml"}
+
+        data = filter
+
+        r = requests.put(self.host + '/{}/scanner/'.format(table),
+                         data = data,
+                         headers = headers,
+                         auth = self.auth,
+                         verify = False)
+
+        loc = r.headers['Location']
+        m = re.match('.*[/](.*)$', loc)
+        scanner = m[1]
+
+        result = self.scan(table, scanner)
+        self.delete_scanner(table, scanner)
+        return result
 
 
 def main():
