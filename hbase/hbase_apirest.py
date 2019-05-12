@@ -75,8 +75,20 @@ def main():
         id = hbase.get_unique_id("C", "test")
         print('id = ', id)
 
+
+    print('================== create user table')
+    families = hbase.create_table("livy_users", ['identity'], recreate=True)
+    print(', '.join(families))
+
+    for name in ["Paul", "John", "Jack"]:
+        key = hbase.get_unique_id("C", "user")
+        hbase.add_row('livy_users', key, {'identity:name': name} )
+
     """
 
+    rows = hbase.get_rows("livy_users")
+    for row in rows:
+        print(str(row))
 
     print('================== filter')
 
@@ -86,7 +98,16 @@ def main():
 
     rows = hbase.filter('B', filter)
     for row in rows:
-        print(str(row))
+        k = row.key.decode()
+        for cell in row.cells:
+            print("row key = {} value = {}".format(k, cell.value.decode()))
+
+    filter = scanner_filter(value_filter('Paul'))
+    rows = hbase.filter('livy_users', filter)
+    for row in rows:
+        k = row.key.decode()
+        for cell in row.cells:
+            print("row key = {} value = {}".format(k, cell.value.decode()))
 
     print('================== get_tables')
     tables = hbase.get_tables()
