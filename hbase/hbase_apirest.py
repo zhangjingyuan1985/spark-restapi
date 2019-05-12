@@ -88,14 +88,6 @@ def main():
     for row in rows:
         print(str(row))
 
-    f2 = column_prefix_filter("unique")
-    f1 = value_filter("1")
-    filter = scanner_filter(list_filter([f1, f2]))
-
-    rows = hbase.filter('B', filter)
-    for row in rows:
-        print(str(row))
-
     print('================== get_tables')
     tables = hbase.get_tables()
     print(', '.join(tables))
