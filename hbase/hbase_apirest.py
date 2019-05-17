@@ -21,12 +21,11 @@ import sys
 sys.path.append('../lib')
 
 from hbase_lib import *
-import random
+import json
 
 def main():
     hbase = HBase()
 
-    """
     version = hbase.get_version()
     print('================== Show version')
     for a in version:
@@ -75,19 +74,31 @@ def main():
         id = hbase.get_unique_id("C", "test")
         print('id = ', id)
 
-
     print('================== create user table')
-    families = hbase.create_table("livy_users", ['identity'], recreate=True)
+    families = hbase.create_table("livy_users", ['identity', 'sessions'], recreate=True)
     print(', '.join(families))
 
     for name in ["Paul", "John", "Jack"]:
         key = hbase.get_unique_id("C", "user")
+
+        print("---------- 1")
         hbase.add_row('livy_users', key, {'identity:name': name} )
 
-    """
+        rows = hbase.get_rows("livy_users")
+        for row in rows:
+            print(str(row))
 
-    rows = hbase.get_rows("livy_users")
-    for row in rows:
+        print("---------- 2")
+        hbase.add_row('livy_users', key, {'identity:name': name, 'sessions:livy': json.dumps([1]) } )
+
+        rows = hbase.get_rows("livy_users")
+        for row in rows:
+            print(str(row))
+
+        print("---------- 3")
+        hbase.add_row('livy_users', key, {'identity:name': name, 'sessions:livy': json.dumps([1, 2]) } )
+
+        row = hbase.get_row("livy_users", key)
         print(str(row))
 
     print('================== filter')
@@ -98,27 +109,30 @@ def main():
 
     rows = hbase.filter('B', filter)
     for row in rows:
-        k = row.key.decode()
-        for cell in row.cells:
-            print("row key = {} value = {}".format(k, cell.value.decode()))
+        k = row.key
+        for kcell in row.cells:
+            cell = row.cells[kcell]
+            print("row key = {} value = {}".format(kcell, cell.value))
 
     filter = scanner_filter(value_filter('Paul'))
     rows = hbase.filter('livy_users', filter)
     for row in rows:
-        k = row.key.decode()
-        for cell in row.cells:
-            print("row key = {} value = {}".format(k, cell.value.decode()))
+        k = row.key
+        for kcell in row.cells:
+            cell = row.cells[kcell]
+            print("row key = {} value = {}".format(k, cell.value))
 
     print('================== get_tables')
     tables = hbase.get_tables()
     print(', '.join(tables))
 
-    exit()
-
     print('================== delete table')
     hbase.delete_table("A")
     hbase.delete_table("B")
     hbase.delete_table("C")
+    hbase.delete_table("livy_users")
+    hbase.delete_table("livy_sessions")
+    hbase.delete_table("users")
 
     print('================== get_tables')
     tables = hbase.get_tables()

@@ -26,6 +26,7 @@ import re
 from gateway import *
 from filter_lib import *
 
+
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -41,24 +42,25 @@ class Cell(object):
         self.timestamp = timestamp
 
     def __str__(self):
-        return "Cell> {} = {} T={}".format(self.name, self.value, self.timestamp)
+        return "[{}={}] [T={}]".format(self.name, self.value, self.timestamp)
 
 
 class Row(object):
     def __init__(self):
         self.key = ""
-        self.cells = []
+        self.cells = OrderedDict()
 
     def set_key(self, key):
         self.key = key
 
     def add_cell(self, cell):
-        self.cells.append(cell)
+        self.cells[cell.name]= cell
 
     def __str__(self):
-        t = "Row> {}".format(self.key)
-        for c in self.cells:
-            t += "\n  {}".format(c)
+        t = "Row[{}]".format(self.key)
+        for k in self.cells:
+            c = self.cells[k]
+            t += "\n  {} = {}".format(k, c)
 
         return t
 
@@ -72,7 +74,10 @@ class HBase(object):
 
         headers = { "Accept": "text/xml"}
 
-        r = requests.get(self.host + '/version', headers = headers, auth = self.auth, verify = False)
+        try:
+            r = requests.get(self.host + '/version', headers = headers, auth = self.auth, verify = False)
+        except ConnectionError:
+            raise ConnectionError
 
         xpars = xmltodict.parse(r.text)
         return xpars["Version"]
@@ -174,10 +179,10 @@ class HBase(object):
             for e in cell:
                 if e in ["column", "@column"]:
                     encoded = cell[e].encode('utf-8')
-                    column_name = base64.b64decode(encoded)
+                    column_name = base64.b64decode(encoded).decode()
                 elif e in ["$", "#text"]:
                     encoded = cell[e].encode('utf-8')
-                    column_value = base64.b64decode(encoded)
+                    column_value = base64.b64decode(encoded).decode()
                 elif e in ["timestamp", "@timestamp"]:
                     timestamp = cell[e]
                 else:
@@ -191,7 +196,7 @@ class HBase(object):
         for k in row:
             if k in ["key", "@key"]:
                 encoded = row[k].encode('utf-8')
-                v = base64.b64decode(encoded)
+                v = base64.b64decode(encoded).decode()
                 rowobj.set_key(v)
                 # print('row key = {}'.format(v))
             elif k == "Cell":
@@ -218,7 +223,7 @@ class HBase(object):
     def get_row(self, table, keyrow):
         headers = {"Content-Type" : "application/json", "Accept" : "application/json"}
 
-        result = []
+        result = None
 
         r = requests.get(self.host + '/{}/{}'.format(table, keyrow), headers=headers, auth = self.auth, verify = False)
 
@@ -232,10 +237,12 @@ class HBase(object):
         for e1 in data:
             # print(e1)
             rows = data['Row']
-            for row in rows:
-                result.append(self.create_rowobj(row))
+            if len(rows) != 1:
+                print("==== After the get_row we should obtain a list of rows with only one row ===")
 
-        # xpars = xmltodict.parse(r.text)
+            result = self.create_rowobj(rows[0])
+            break
+
         return result
 
     def get_scanner(self, table, max=10):
@@ -292,6 +299,10 @@ curl -vi -X PUT \
 
         return r
 
+    def delete_row(self, table, rowkey):
+        headers = {"Accept" : "text/xml"}
+        r = requests.delete(self.host + '/{}/{}'.format(table, rowkey), headers=headers, auth = self.auth, verify = False)
+        return r
 
     def delete_scanner(self, table, scanner):
         headers = {"Accept" : "text/xml"}
@@ -308,8 +319,11 @@ curl -vi -X PUT \
             if r.status_code == 204:
                 break
 
-            xpars = xmltodict.parse(r.text)
-            rows = xpars['CellSet']
+            try:
+                xpars = xmltodict.parse(r.text)
+                rows = xpars['CellSet']
+            except:
+                return result
 
             for key in rows:
                 if type(rows[key]) == list:
@@ -337,7 +351,7 @@ curl -vi -X PUT \
         row = self.get_row(table, 'unique')
         unique = 1
         if not row is None:
-            cell = row[0].cells[0]
+            cell = row.cells['unique:unique']
             unique = int(cell.value) + 1
 
         self.add_row(table, 'unique', {'unique:unique': unique})
