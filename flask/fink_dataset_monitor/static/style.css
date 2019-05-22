@@ -40,7 +40,7 @@ input[type=submit] { align-self: start; min-width: 10em; }
 }
 .left{
   left: 0;
-  background-color: green;
+  ## background-color: green;
 }
 .right{
   right: 0;

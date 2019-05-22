@@ -27,11 +27,22 @@
     </div>
 </div>
 
-    <div class="split">
+<div>
+    <section>
+        <header>
+            <h1>User management</h1>
+        </header>
+        {% block user %}
+            <body>
+            </body>
+        {% endblock %}
+    </section>
+</div>
 
+<div>
     <section class="left">
         <header>
-            {% block header %}{% endblock %}
+            {% block session_header %}{% endblock %}
         </header>
         {% for message in get_flashed_messages() %}
             <div class="flash">{{ message }}</div>

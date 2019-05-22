@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block header %}
+{% block session_header %}
   <h1>{% block title %}Opening the session {% endblock %}</h1>
 {% endblock %}
 
@@ -10,7 +10,7 @@ Session n° {{session_id}}
         <li>
             <form action="wait" method="post">
                 <input type="hidden" name="session_id" value="{{session_id}}">
-                <button type="submit">Wait until session becomes IDLE ... )</button>
+                <button type="submit">Wait until session becomes IDLE</button>
             </form>
         </li>
         <li>

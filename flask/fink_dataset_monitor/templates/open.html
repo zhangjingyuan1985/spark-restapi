@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 
-{% block header %}
+{% block session_header %}
   <h1>{% block title %}Session management{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
     <ul>
         <li>
-            <a href="{{ url_for('open_session') }}">Open session</a>
-        </li>
+            <form action="/open" method="post">
+                <button type="submit">Open session</button>
+            </form>
+       </li>
     </ul>
 {% endblock %}
