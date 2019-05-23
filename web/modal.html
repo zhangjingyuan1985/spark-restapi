@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" type="text/css" href="css/modal.css"> -->
+
+    <style>
+.popup{
+  position:fixed;
+  left:50%;
+
+}
+.popup .wrapper{
+  position:relative;
+  left:-50%;
+
+  /*popup-styles*/
+  background-color:#eee;
+  padding:10px;
+  border:solid 2px #444;
+  border-radius:10px;
+}
+
+###html{background-color:#;}
+
+
+    </style>
+
+</head>
+
+<!-- Main start -->
+<body>
+
+
+<div class="popup" id="LoginForm">
+  <div class="wrapper">
+
+
+      <form action="">
+        <h1>Login</h1>
+          Identifier : <input type="text" placeholder="Enter identifier" name="identifier" required>
+          Password : <input type="password" placeholder="Enter Password" name="psw" required>
+          <button type="submit">Login</button>
+          <button type="button" onclick="closeLogin()">Close</button>
+      </form>
+
+
+    </div>
+</div>
+
+
+
+    <ul>
+        <li>
+            <button id="ButtonLogin">Login</button>
+        </li>
+
+        <!--
+        <li>
+            {{ users }}
+            <form action="" method="post">
+                <input type="text" name="user" value="{{user}}">
+                <button type="submit">Create user</button>
+            </form>
+       </li>
+       <li>
+            <form action="" method="post">
+                <input list="users" name="user"">
+                <datalist id="users">
+                    {% for i in range(0, len) %}
+                    <option value="{{ users[i] }}"></option>
+                    {% endfor %}
+                </datalist>
+                <button type="submit">Select existing user</button>
+            </form>
+       </li>
+        -->
+    </ul>
+
+<script>
+var login = document.getElementById("LoginForm");
+
+// Get the button that opens the modal
+var btn = document.getElementById("ButtonLogin");
+
+// When the user clicks the button, open the modal
+btn.onclick = function() {
+  login.style.display = "block";
+}
+
+function closeLogin() {
+  document.getElementById("LoginForm").style.display = "none";
+}
+
+</script>
+
+
+
+
+</body>
+</html>

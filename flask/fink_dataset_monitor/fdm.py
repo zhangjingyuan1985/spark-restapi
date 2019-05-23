@@ -28,10 +28,12 @@ hbase = hbase_lib.HBase()
 
 dtb_users = hbase.create_table('livy_users', ['identity', 'sessions'])
 
-print("show the DTB of users")
+print("show the DTB of existing users")
 rows = hbase.get_rows('livy_users')
 for row in rows:
-    print(str(row))
+    name = row.cells['identity:name'].value
+    sessions = row.cells['sessions:livy'].value
+    print("user {} sessions {}".format(name, sessions))
 
 print("--------------------------------------")
 
@@ -65,7 +67,16 @@ def inject_stage_and_region():
 
 @app.route('/', methods=['GET', 'POST'])
 def fink_dataset_monitor():
-    out = render_template("open.html")
+
+    users = []
+
+    rows = hbase.get_rows('livy_users')
+    for row in rows:
+        name = row.cells['identity:name'].value
+        users.append(name)
+        sessions = row.cells['sessions:livy'].value
+
+    out = render_template("user.html", len=len(users), users=users)
     return out
 
 

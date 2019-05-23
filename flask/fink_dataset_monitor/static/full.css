@@ -1,0 +1,18 @@
+.popup{
+  position:fixed;
+  left:50%;
+
+}
+.popup .wrapper{
+  position:relative;
+  left:-50%;
+
+  /*popup-styles*/
+  background-color:#fff;
+  padding:10px;
+  border:solid 2px #444;
+  border-radius:10px;
+}
+
+html{background-color:#aaa;}
+
