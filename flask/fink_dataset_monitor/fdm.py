@@ -15,6 +15,7 @@ sys.path.append("../../lib")
 import livy
 import hbase_lib
 import gateway
+import users
 
 
 __author__ = 'Chris Arnault'
@@ -26,14 +27,8 @@ url, auth = gateway.gateway_url('livy/v1')
 livy_client = livy.client.LivyClient(url, auth=auth, verify_ssl=False)
 hbase = hbase_lib.HBase()
 
-dtb_users = hbase.create_table('livy_users', ['identity', 'sessions'])
-
-print("show the DTB of existing users")
-rows = hbase.get_rows('livy_users')
-for row in rows:
-    name = row.cells['identity:name'].value
-    sessions = row.cells['sessions:livy'].value
-    print("user {} sessions {}".format(name, sessions))
+families = hbase.create_table("livy_users", ['identity', 'sessions'])
+print(', '.join(families))
 
 print("--------------------------------------")
 
@@ -54,6 +49,7 @@ turn the flask app into a socketio app
 """
 socketio = SocketIO(app)
 
+connected_user = ""
 
 @app.context_processor
 def inject_stage_and_region():
@@ -61,23 +57,13 @@ def inject_stage_and_region():
     This Flask template variable will be used to set a version id
     to force to re-load the javascript during the development
     """
-    v = random.random()*9999
-    return dict(version="{}".format(v))
 
+    d = dict()
+    d["version"] = random.random()*9999
+    d["connected_user"] = connected_user
 
-@app.route('/', methods=['GET', 'POST'])
-def fink_dataset_monitor():
-
-    users = []
-
-    rows = hbase.get_rows('livy_users')
-    for row in rows:
-        name = row.cells['identity:name'].value
-        users.append(name)
-        sessions = row.cells['sessions:livy'].value
-
-    out = render_template("user.html", len=len(users), users=users)
-    return out
+    # return dict(version="{}".format(v), connected_user=connected_user)
+    return d
 
 
 @socketio.on('connect', namespace='/test')
@@ -85,13 +71,79 @@ def test_connect():
     """
     Management of HTML sessions
     """
+    # global connected_user
     # need visibility of the global thread object
+
+    # connected_user = ""
     print('Client connected')
 
 
 @socketio.on('disconnect', namespace='/test')
 def test_disconnect():
     print('Client disconnected')
+
+
+@app.route('/', methods=['GET', 'POST'])
+def fink_dataset_monitor():
+    try:
+        connected_user = request.form["connected_user"]
+    except:
+        connected_user = ""
+
+    out = render_template("user.html", message="", connected_user=connected_user)
+    return out
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    global connected_user
+
+    identifier = request.form["identifier"]
+    password = request.form["password"]
+    print("identifier={} password={}".format(identifier, password))
+
+    message = ""
+    status = users.connect_to_user(hbase, identifier, password)
+    if status == users.USER_OK:
+        message = "{} is connected".format(identifier)
+        connected_user = identifier
+    else:
+        message = "Cannot login to {}. User not registered or bad password (status={})".format(identifier, status)
+        connected_user = ""
+
+    out = render_template("user_message.html",
+                          message=message,
+                          do_popup=True,
+                          identifier=identifier,
+                          password=password,
+                          connected_user=connected_user)
+    return out
+
+
+@app.route('/create_user', methods=['GET', 'POST'])
+def create_user():
+    identifier = request.form["identifier"]
+    password = request.form["password"]
+    print("creating identifier={} password={} ??".format(identifier, password))
+
+    if users.has_user(hbase, identifier):
+        message = "User {} already registered. Please login".format(identifier)
+    else:
+        if not users.create_user(hbase, identifier, password):
+            message = "User {} not registered. Please retry".format(identifier)
+        else:
+            message = "User {} succesfully registered. Please login".format(identifier)
+
+    print(message)
+
+    out = render_template("user_message.html", message=message, do_popup=True, connected_user=connected_user)
+    return out
+
+
+@app.route('/ask_open', methods=['GET', 'POST'])
+def ask_open_session():
+    out = render_template("open.html", connected_user=connected_user)
+    return out
 
 
 @app.route('/open', methods=['GET', 'POST'])
@@ -102,7 +154,7 @@ def open_session():
     print("Starting Thread")
     thread = SessionThread()
     session_id = thread.session_launch()
-    out = render_template("wait.html", session_id=session_id)
+    out = render_template("wait.html", session_id=session_id, connected_user=connected_user)
     return out
 
 
@@ -112,7 +164,7 @@ def wait_session():
     The Livy session has been launched, wait until it becomes Idle
     """
     session_id = request.form["session_id"]
-    out = render_template("session.html", session_id=session_id)
+    out = render_template("session.html", session_id=session_id, connected_user=connected_user)
     return out
 
 
@@ -123,7 +175,7 @@ def idle():
     """
     session_id = int(request.form["session_id"])
     print("Received idle form session_id={} type={}".format(session_id, type(session_id)))
-    out = render_template("session.html", session_id=session_id)
+    out = render_template("session.html", session_id=session_id, connected_user=connected_user)
     return out
 
 
@@ -147,7 +199,7 @@ def close_session():
                 print("error killing session ", session_id)
 
         # closing the Livy session
-    out = render_template("open.html")
+    out = render_template("open.html", connected_user=connected_user)
     return out
 
 
@@ -162,7 +214,8 @@ def open_statement():
     out = render_template("wait_statement.html",
                           session_id=session_id,
                           statement=statement,
-                          statement_id=statement_id)
+                          statement_id=statement_id,
+                          connected_user=connected_user)
 
     return out
 
@@ -178,7 +231,8 @@ def available():
                           session_id=session_id,
                           statement_id=statement_id,
                           previous_statement=statement,
-                          result=result)
+                          result=result,
+                          connected_user=connected_user)
     return out
 
 

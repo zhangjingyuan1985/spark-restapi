@@ -5,52 +5,46 @@
  <!-- Trigger/Open The Modal -->
 
 <div class="login-popup" id="LoginForm">
-  <div class="login-wrapper">
-
-
-      <form action="">
-        <h1>Login</h1>
-          Identifier : <input type="text" placeholder="Enter identifier" name="identifier" required>
-          Password : <input type="password" placeholder="Enter Password" name="psw" required>
-          <button type="submit">Login</button>
-          <button type="button" onclick="closeLogin()">Close</button>
-      </form>
-
-
+    <div class="login-wrapper">
+        <p>{{ message }}</p>
+        <form method="post">
+            <h1>Login</h1>
+            Identifier :
+            <input type="text" placeholder="Enter identifier" name="identifier" required>
+            Password :
+            <input type="password" placeholder="Enter Password" name="password" required>
+            <button type="submit" formaction="login">Login</button>
+            <button type="submit" formaction="create_user" >Create user</button>
+            <button type="button" formaction="login" onclick="closeLogin()">Close</button>
+        </form>
     </div>
 </div>
 
+<ul>
+
+    {% if connected_user != '' %}
+    <li>
+        <form method="post">
+            <input type="hidden" name="connected_user" value="">
+            <button type="submit" formaction="/">Disconnect</button>
+        </form>
+    </li>
+    {% else %}
+    <li>
+        <button id="ButtonLogin">Login</button>
+    </li>
+    {% endif %}
 
 
-    <ul>
-        <li>
-            <button id="ButtonLogin">Login</button>
-        </li>
 
-        <!--
-        <li>
-            {{ users }}
-            <form action="" method="post">
-                <input type="text" name="user" value="{{user}}">
-                <button type="submit">Create user</button>
-            </form>
-       </li>
-       <li>
-            <form action="" method="post">
-                <input list="users" name="user"">
-                <datalist id="users">
-                    {% for i in range(0, len) %}
-                    <option value="{{ users[i] }}"></option>
-                    {% endfor %}
-                </datalist>
-                <button type="submit">Select existing user</button>
-            </form>
-       </li>
-        -->
-    </ul>
+</ul>
 
 <script>
 var login = document.getElementById("LoginForm");
+
+{% if do_popup %}
+  login.style.display = "block";
+{% endif %}
 
 // Get the button that opens the modal
 var btn = document.getElementById("ButtonLogin");

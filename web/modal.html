@@ -2,8 +2,7 @@
 <html>
 
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- <link rel="stylesheet" type="text/css" href="css/modal.css"> -->
+  <!-- <meta name="viewport" content="width=device-width, initial-scale=1"> -->
 
     <style>
 .popup{
@@ -35,8 +34,6 @@
 
 <div class="popup" id="LoginForm">
   <div class="wrapper">
-
-
       <form action="">
         <h1>Login</h1>
           Identifier : <input type="text" placeholder="Enter identifier" name="identifier" required>
@@ -44,38 +41,13 @@
           <button type="submit">Login</button>
           <button type="button" onclick="closeLogin()">Close</button>
       </form>
-
-
     </div>
 </div>
-
-
 
     <ul>
         <li>
             <button id="ButtonLogin">Login</button>
         </li>
-
-        <!--
-        <li>
-            {{ users }}
-            <form action="" method="post">
-                <input type="text" name="user" value="{{user}}">
-                <button type="submit">Create user</button>
-            </form>
-       </li>
-       <li>
-            <form action="" method="post">
-                <input list="users" name="user"">
-                <datalist id="users">
-                    {% for i in range(0, len) %}
-                    <option value="{{ users[i] }}"></option>
-                    {% endfor %}
-                </datalist>
-                <button type="submit">Select existing user</button>
-            </form>
-       </li>
-        -->
     </ul>
 
 <script>

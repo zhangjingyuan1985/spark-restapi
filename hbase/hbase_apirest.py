@@ -130,7 +130,7 @@ def main():
     hbase.delete_table("A")
     hbase.delete_table("B")
     hbase.delete_table("C")
-    hbase.delete_table("livy_users")
+    # hbase.delete_table("livy_users")
     hbase.delete_table("livy_sessions")
     hbase.delete_table("users")
 

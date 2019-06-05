@@ -1,0 +1,31 @@
+menus:
+
+- organisations
+  + create
+  + manage
+  + parameters
+
+- user
+  + organisation
+  + subscribe
+  + login
+  + logout
+
+    one user may :
+        + belong to an organization
+        + manage an organization
+        + manage users
+        + create sesssions
+        + register sofware resource
+        + define default session parameters
+
+- sessions
+  + type
+  + resources (core, memory, ...)
+  + history
+
+- software resources
+  + trained models
+  + UDF
+  + usability parameters
+

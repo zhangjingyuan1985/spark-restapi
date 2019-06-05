@@ -18,13 +18,14 @@
 
     <style>
 .login-popup{
+  display: None;
   position:fixed;
-  left:50%;
-
+  left:40%;
 }
+
 .login-popup .login-wrapper{
   position:relative;
-  left:-50%;
+  left:-60%;
 
   /*popup-styles*/
   background-color:#eee;
@@ -33,17 +34,21 @@
   border-radius:10px;
 }
 
-###html{background-color:#;}
-
-
     </style>
 
     </head>
 
     {% block presentation %}
     <nav>
-        Fink dataset monitor {{version}}
+        <h1> Fink dataset monitor </h1>
+        <!-- {{version}} -->
+        {% if connected_user != '' %}
+        Connected User: [{{connected_user}}]
+        {% endif %}
+
+
     </nav>
+
     {% endblock %}
 
     <!-- {{version}} -->

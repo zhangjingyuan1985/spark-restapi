@@ -1,9 +1,9 @@
-.popup{
+.login-popup{
   position:fixed;
   left:50%;
 
 }
-.popup .wrapper{
+.login-popup .login-wrapper{
   position:relative;
   left:-50%;
 
