@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block header %}
+{% block session_header %}
   <h1>{% block title %}Statement operations{% endblock %}</h1>
 {% endblock %}
 
@@ -17,12 +17,17 @@ Statement n° {{statement_id}}
                 <input type="hidden" name="statement" value="{{statement}}">
                 <input type="hidden" name="statement_id" value="{{statement_id}}">
                 <input type="hidden" name="result" value="{{result}}">
+                <input type="hidden" name="connected_user" value="{{ connected_user}}">
 
                 <button type="submit">Wait until Spark statement is available ...</button>
             </form>
         </li>
         <li>
-            <a href="{{ url_for('close_session') }}">Close session</a>
+            <form action="/close" method="post">
+                <input type="hidden" name="session_id" value="{{session_id}}">
+                <input type="hidden" name="connected_user" value="{{ connected_user}}">
+                <button type="submit">Close session</button>
+            </form>
         </li>
     </ul>
 {% endblock %}

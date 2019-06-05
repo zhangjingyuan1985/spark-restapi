@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block user %}
+
+ <!-- Trigger/Open The Modal -->
+
+
+
+<div class="login-popup" id="LoginMessage">
+    <div class="login-wrapper">
+        <p>{{ message }}</p>
+        <form method="post">
+            <input type="hidden" name="identifier", value=" {{ identifier }}">
+            <input type="hidden" name="password", value=" {{ password }}">
+            <input type="hidden" name="connected_user" value="{{ connected_user }}">
+            {% if connected_user != "" %}
+            <button type="submit" formaction="/ask_open" onclick="closeMessage()">OK</button>
+            {% else %}
+            <button type="submit" formaction="/" onclick="closeMessage()">OK</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+
+<script>
+var message = document.getElementById("LoginMessage");
+
+{% if do_popup %}
+  message.style.display = "block";
+{% endif %}
+
+function closeMessage() {
+  document.getElementById("LoginMessage").style.display = "none";
+}
+</script>
+
+
+{% endblock %}

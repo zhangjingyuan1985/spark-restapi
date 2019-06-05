@@ -38,6 +38,7 @@ for n, arg in enumerate(sys.argv):
     try:
         rows = hbase.get_rows(arg)
         for row in rows:
+            str(row)
             print(str(row))
     except:
         print("error deleting table ", arg)

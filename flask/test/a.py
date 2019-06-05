@@ -1,3 +1,5 @@
+
+
 from flask import Flask, render_template, redirect, url_for
 from flask_socketio import SocketIO, send, emit
 
@@ -73,4 +75,24 @@ def test_disconnect():
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+
+    import sys
+    import re
+
+    host = "127.0.0.1"
+    port = 24701
+
+    if len(sys.argv) >= 2:
+        for arg in sys.argv:
+            m = re.match(r"..port.([\d]+)", arg)
+            if not m is None:
+                port = m[1]
+                continue
+
+            m = re.match(r"..host.(.+)", arg)
+            if not m is None:
+                host = m[1]
+                continue
+
+    socketio.run(app, port=port)
+

@@ -1,6 +1,21 @@
 {% extends 'base.html' %}
 
-{% block header %}
+{% block user %}
+    {% if connected_user != '' %}
+    <li>
+        <form method="post">
+            <input type="hidden" name="connected_user" value="">
+            <button type="submit" formaction="/">Disconnect</button>
+        </form>
+    </li>
+    {% else %}
+    <li>
+        <button id="ButtonLogin">Login</button>
+    </li>
+    {% endif %}
+{% endblock %}
+
+{% block session_header %}
   <h1>{% block title %}Session operations{% endblock %}</h1>
 {% endblock %}
 
@@ -12,12 +27,14 @@ Session n° {{session_id}}
             <form action="/open_statement" method="post">
                 <input type="text" name="statement" value="">
                 <input type="hidden" name="session_id" value="{{session_id}}">
+                <input type="hidden" name="connected_user" value="{{ connected_user}}">
                 <button type="submit">Start a Spark statement</button>
             </form>
         </li>
         <li>
             <form action="/close" method="post">
                 <input type="hidden" name="session_id" value="{{session_id}}">
+                <input type="hidden" name="connected_user" value="{{ connected_user}}">
                 <button type="submit">Close session</button>
             </form>
         </li>
