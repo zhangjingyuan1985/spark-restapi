@@ -5,6 +5,7 @@ menus:
   + manage
   + parameters
 
+        + register sofware resource
 - user
   + organisation
   + subscribe
@@ -16,7 +17,6 @@ menus:
         + manage an organization
         + manage users
         + create sesssions
-        + register sofware resource
         + define default session parameters
 
 - sessions
